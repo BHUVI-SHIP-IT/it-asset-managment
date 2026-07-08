@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Tracer.Application.Features.Reports.Commands.GenerateFinancialReport;
 using Tracer.Application.Features.Reports.Queries.DownloadReport;
 using Tracer.Application.Features.Reports.Queries.GetReportStatus;
@@ -10,6 +11,7 @@ namespace Tracer.Api.Controllers.v1;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize]
+[EnableRateLimiting(RateLimitPolicies.Reports)]
 public class ReportsController : ControllerBase
 {
     private readonly IMediator _mediator;

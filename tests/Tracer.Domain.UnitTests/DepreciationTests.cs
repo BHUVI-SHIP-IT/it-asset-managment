@@ -1,6 +1,6 @@
+using FluentAssertions;
 using Tracer.Domain.Aggregates.DepreciationAggregate;
 using Xunit;
-using FluentAssertions;
 
 namespace Tracer.Domain.UnitTests;
 

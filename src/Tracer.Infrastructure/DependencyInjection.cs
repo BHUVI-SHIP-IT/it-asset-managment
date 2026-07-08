@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Tracer.Application.Common.Interfaces;
 using Tracer.Infrastructure.Authentication;
+using Tracer.Infrastructure.Cache;
 using Tracer.Infrastructure.Notifications;
 
 namespace Tracer.Infrastructure;
@@ -29,7 +30,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationChannel, SmtpEmailChannel>();
         services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
 
-        // Redis distributed cache
+        // Redis distributed cache + ICacheService
         var redisConnection = configuration.GetConnectionString("Redis");
         if (!string.IsNullOrWhiteSpace(redisConnection))
         {
@@ -39,6 +40,12 @@ public static class DependencyInjection
                 options.InstanceName = "Tracer:";
             });
         }
+        else
+        {
+            services.AddDistributedMemoryCache();
+        }
+
+        services.AddSingleton<ICacheService, RedisCacheService>();
 
         // ── IAM & Auth (M1) ──
         

@@ -31,8 +31,8 @@ const BASE_URL = __ENV.BASE_URL || "http://localhost:5000";
 
 function login() {
   const payload = JSON.stringify({
-    username: __ENV.USERNAME || "admin@tracer.io",
-    password: __ENV.PASSWORD || "Password123!",
+    email: __ENV.USERNAME || "admin@tracer.io",
+    password: __ENV.PASSWORD || "Admin123!",
   });
   const res = http.post(`${BASE_URL}/api/v1/auth/login`, payload, {
     headers: { "Content-Type": "application/json" },

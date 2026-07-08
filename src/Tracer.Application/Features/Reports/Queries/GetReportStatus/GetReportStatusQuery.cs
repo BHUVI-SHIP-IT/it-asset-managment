@@ -1,6 +1,6 @@
 using MediatR;
-using Tracer.Shared.Results;
 using Tracer.Domain.Entities;
+using Tracer.Shared.Results;
 
 namespace Tracer.Application.Features.Reports.Queries.GetReportStatus;
 

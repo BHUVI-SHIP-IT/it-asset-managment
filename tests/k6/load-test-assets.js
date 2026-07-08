@@ -47,8 +47,8 @@ let cachedToken = null;
 export function setup() {
   // Obtain a token once and share across VUs.
   const payload = JSON.stringify({
-    username: __ENV.USERNAME || "admin@tracer.io",
-    password: __ENV.PASSWORD || "Password123!",
+    email: __ENV.USERNAME || "admin@tracer.io",
+    password: __ENV.PASSWORD || "Admin123!",
   });
   const res = http.post(`${BASE_URL}/api/v1/auth/login`, payload, {
     headers: { "Content-Type": "application/json" },

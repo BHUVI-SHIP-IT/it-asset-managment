@@ -22,7 +22,7 @@ public static class DependencyInjection
         services.AddScoped<AuditableEntityInterceptor>();
         services.AddScoped<OutboxInterceptor>();
 
-        services.AddDbContext<TracerDbContext>((sp, options) =>
+        services.AddDbContextPool<TracerDbContext>((sp, options) =>
         {
             var auditInterceptor = sp.GetRequiredService<AuditableEntityInterceptor>();
             var outboxInterceptor = sp.GetRequiredService<OutboxInterceptor>();
@@ -33,9 +33,11 @@ public static class DependencyInjection
                     {
                         sqlOptions.MigrationsAssembly(typeof(TracerDbContext).Assembly.FullName);
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
+                        sqlOptions.MaxBatchSize(100);
                     })
                 .AddInterceptors(auditInterceptor, outboxInterceptor);
-        });
+        }, poolSize: 128);
+
 
         // Repositories & UoW.
         services.AddScoped<IAssetRepository, AssetRepository>();

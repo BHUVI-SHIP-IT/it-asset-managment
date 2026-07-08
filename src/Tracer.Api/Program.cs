@@ -1,28 +1,37 @@
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using Hangfire;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
+using RedisRateLimiting;
 using Serilog;
+using Serilog.Events;
+using Tracer.Api;
+using Tracer.Api.Middleware;
 using Tracer.Application.Common.Behaviors;
 using Tracer.Infrastructure;
 using Tracer.Persistence;
 
-// ── Serilog Bootstrap ──
+// ── Serilog Bootstrap (async, minimal — before host builds) ──
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .WriteTo.Async(a => a.Console())
     .CreateBootstrapLogger();
 
 try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    // ── Serilog ──
+    // ── Serilog (full pipeline — driven by appsettings.json) ──
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
-        .WriteTo.Console());
+        .Enrich.WithMachineName()
+        .Enrich.WithProperty("Application", "TracerApi")
+        // CorrelationId is pushed by CorrelationIdMiddleware into LogContext
+    );
 
     // ── Layer DI Registrations ──
     builder.Services.AddPersistence(builder.Configuration);
@@ -73,6 +82,7 @@ try
     });
 
     var sqlConn = builder.Configuration.GetConnectionString("DefaultConnection");
+    var redisConn = builder.Configuration.GetConnectionString("Redis");
 
     // ── Hangfire ──
     builder.Services.AddHangfire(config => config
@@ -89,7 +99,6 @@ try
     if (!string.IsNullOrWhiteSpace(sqlConn))
         healthBuilder.AddSqlServer(sqlConn, name: "sql-server", tags: ["ready"]);
 
-    var redisConn = builder.Configuration.GetConnectionString("Redis");
     if (!string.IsNullOrWhiteSpace(redisConn))
         healthBuilder.AddRedis(redisConn, name: "redis", tags: ["ready"]);
 
@@ -110,7 +119,7 @@ try
     builder.Services.AddExceptionHandler<Tracer.Api.Middleware.GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
 
-    // ── M7: Response Compression (Gzip + Brotli for JSON API responses) ──
+    // ── Response Compression (Gzip + Brotli) ──
     builder.Services.AddResponseCompression(options =>
     {
         options.EnableForHttps = true;
@@ -124,55 +133,113 @@ try
     builder.Services.Configure<GzipCompressionProviderOptions>(options =>
         options.Level = System.IO.Compression.CompressionLevel.SmallestSize);
 
-    // ── M7: Output Caching ──
+    // ── Output Caching ──
     builder.Services.AddOutputCache(options =>
     {
-        // Read endpoints are cached per-user (vary by Authorization header).
+        // Read endpoints vary by Authorization header so each user gets their own cached response.
         options.AddPolicy("UserScoped30s", policy =>
             policy.Expire(TimeSpan.FromSeconds(30))
-                  .VaryByHeader("Authorization"));
+                  .SetVaryByHeader("Authorization"));
 
         options.AddPolicy("UserScoped15s", policy =>
             policy.Expire(TimeSpan.FromSeconds(15))
-                  .VaryByHeader("Authorization"));
+                  .SetVaryByHeader("Authorization"));
     });
 
-    // ── M7: Rate Limiting (ASP.NET Core 7+ built-in) ──
+    // ── Rate Limiting (Token Bucket, per-user, Redis-backed) ──
     builder.Services.AddRateLimiter(options =>
     {
         options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-        // Read endpoints: 300 requests per minute per IP.
-        options.AddFixedWindowLimiter("ReadPolicy", limiterOptions =>
+        // Emit Retry-After so clients know when to retry.
+        options.OnRejected = async (ctx, ct) =>
         {
-            limiterOptions.Window = TimeSpan.FromMinutes(1);
-            limiterOptions.PermitLimit = 300;
-            limiterOptions.QueueLimit = 0;
-            limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            if (ctx.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                ctx.HttpContext.Response.Headers.RetryAfter =
+                    ((int)retryAfter.TotalSeconds).ToString();
+
+            ctx.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            await ctx.HttpContext.Response.WriteAsync(
+                "{\"code\":\"RateLimit.Exceeded\",\"description\":\"Too many requests. See Retry-After header.\"}",
+                cancellationToken: ct);
+        };
+
+        // ── Auth (login / refresh) — brute-force protection ──
+        // 20 attempts/min per IP. No queue — fail fast.
+        options.AddFixedWindowLimiter(RateLimitPolicies.Auth, o =>
+        {
+            o.Window = TimeSpan.FromMinutes(1);
+            o.PermitLimit = 20;
+            o.QueueLimit = 0;
         });
 
-        // Write/mutation endpoints: 100 requests per minute per IP.
-        options.AddFixedWindowLimiter("WritePolicy", limiterOptions =>
+        // ── Read endpoints — high throughput GET ──
+        // 1,000 req/min per user (falls back to IP for anon). Queue 100 to absorb bursts.
+        if (!string.IsNullOrWhiteSpace(redisConn))
         {
-            limiterOptions.Window = TimeSpan.FromMinutes(1);
-            limiterOptions.PermitLimit = 100;
-            limiterOptions.QueueLimit = 0;
-            limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            // Redis-backed sliding window — truly distributed across instances.
+            options.AddRedisSlidingWindowLimiter(RateLimitPolicies.Read, o =>
+            {
+                o.ConnectionMultiplexerFactory = () =>
+                    StackExchange.Redis.ConnectionMultiplexer.Connect(redisConn);
+                o.PermitLimit = 1000;
+                o.Window = TimeSpan.FromMinutes(1);
+                o.SegmentsPerWindow = 6;
+                o.GetPartitionKey = ctx =>
+                    ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? ctx.Connection.RemoteIpAddress?.ToString()
+                    ?? "anon";
+            });
+        }
+
+        else
+        {
+            options.AddSlidingWindowLimiter(RateLimitPolicies.Read, o =>
+            {
+                o.Window = TimeSpan.FromMinutes(1);
+                o.SegmentsPerWindow = 6;
+                o.PermitLimit = 1000;
+                o.QueueLimit = 100;
+                o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            });
+        }
+
+        // ── Write endpoints — mutation (POST/PUT/DELETE) ──
+        // 200 req/min per user, queue 20.
+        options.AddSlidingWindowLimiter(RateLimitPolicies.Write, o =>
+        {
+            o.Window = TimeSpan.FromMinutes(1);
+            o.SegmentsPerWindow = 6;
+            o.PermitLimit = 200;
+            o.QueueLimit = 20;
+            o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         });
 
-        // Auth endpoint: 20 login attempts per minute per IP (brute-force protection).
-        options.AddFixedWindowLimiter("AuthPolicy", limiterOptions =>
+        // ── Reports — CPU-heavy exports ──
+        // 10 req/min per user, queue 5.
+        options.AddSlidingWindowLimiter(RateLimitPolicies.Reports, o =>
         {
-            limiterOptions.Window = TimeSpan.FromMinutes(1);
-            limiterOptions.PermitLimit = 20;
-            limiterOptions.QueueLimit = 0;
-            limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            o.Window = TimeSpan.FromMinutes(1);
+            o.SegmentsPerWindow = 6;
+            o.PermitLimit = 10;
+            o.QueueLimit = 5;
+            o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         });
     });
 
-    // ── M7: Maximum Request Body Size (1MB) ──
+    // ── Kestrel tuning for high-concurrency ──
     builder.WebHost.ConfigureKestrel(serverOptions =>
-        serverOptions.Limits.MaxRequestBodySize = 1 * 1024 * 1024); // 1 MB
+    {
+        serverOptions.Limits.MaxConcurrentConnections = 10_000;
+        serverOptions.Limits.MaxConcurrentUpgradedConnections = 1_000;
+        serverOptions.Limits.MaxRequestBodySize = 1 * 1024 * 1024; // 1 MB
+        serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(15);
+    });
+
+    // Raise minimum thread-pool threads to avoid starvation at high concurrency.
+    ThreadPool.SetMinThreads(
+        workerThreads: Environment.ProcessorCount * 8,
+        completionPortThreads: Environment.ProcessorCount * 8);
 
     // ════════════════════════════════════════
     var app = builder.Build();
@@ -184,31 +251,59 @@ try
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tracer API v1"));
     }
 
-    // ── M7: Security Headers (earliest possible — applies to all responses) ──
-    app.UseMiddleware<Tracer.Api.Middleware.SecurityHeadersMiddleware>();
+    // ── Security Headers ──
+    app.UseMiddleware<SecurityHeadersMiddleware>();
 
-    // ── M7: HTTPS Redirect ──
+    // ── Correlation ID (before request logging so the ID appears in all log entries) ──
+    app.UseMiddleware<CorrelationIdMiddleware>();
+
+    // ── HTTPS Redirect ──
     app.UseHttpsRedirection();
 
-    // ── M7: Response Compression ──
+    // ── Response Compression ──
     app.UseResponseCompression();
 
-    // ── M7: Output Caching ──
+    // ── Output Caching ──
     app.UseOutputCache();
 
-    // ── M7: Rate Limiting ──
+    // ── Rate Limiting ──
     app.UseRateLimiter();
 
     app.UseExceptionHandler();
-    app.UseSerilogRequestLogging();
-    app.UseCors("AllowAngular");
 
+    // ── Structured request logging — exclude health checks, swagger, and favicon ──
+    app.UseSerilogRequestLogging(opts =>
+    {
+        opts.GetLevel = (ctx, _, ex) =>
+        {
+            if (ex != null) return LogEventLevel.Error;
+            if (ctx.Response.StatusCode >= 500) return LogEventLevel.Error;
+            if (ctx.Response.StatusCode >= 400) return LogEventLevel.Warning;
+
+            var path = ctx.Request.Path.Value ?? string.Empty;
+            if (path.StartsWith("/health", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith("/favicon", StringComparison.OrdinalIgnoreCase))
+                return LogEventLevel.Verbose; // Effectively suppressed at Warning min-level.
+
+            return LogEventLevel.Information;
+        };
+
+        opts.EnrichDiagnosticContext = (diag, ctx) =>
+        {
+            diag.Set("RequestHost", ctx.Request.Host.Value ?? "unknown");
+            diag.Set("RequestScheme", ctx.Request.Scheme);
+            if (ctx.User.Identity?.IsAuthenticated == true)
+                diag.Set("UserId", ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown");
+        };
+    });
+
+    app.UseCors("AllowAngular");
     app.UseAuthentication();
     app.UseAuthorization();
-
     app.MapControllers();
 
-    // ── M7: Hangfire Dashboard — require authentication ──
+    // ── Hangfire Dashboard ──
     app.UseHangfireDashboard("/hangfire", new DashboardOptions
     {
         Authorization = [new Hangfire.Dashboard.LocalRequestsOnlyAuthorizationFilter()],
@@ -217,7 +312,7 @@ try
 
     Tracer.Api.HangfireJobsConfig.ScheduleRecurringJobs();
 
-    // Health check endpoints (Doc 11 §6.2).
+    // ── Health Check Endpoints ──
     app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
     {
         Predicate = _ => false
@@ -228,7 +323,7 @@ try
         Predicate = check => check.Tags.Contains("ready")
     });
 
-    Log.Information("Starting Tracer API (M7 Hardened)...");
+    Log.Information("Starting Tracer API (M7 Hardened — high-concurrency optimized)...");
     app.Run();
 }
 catch (Exception ex)

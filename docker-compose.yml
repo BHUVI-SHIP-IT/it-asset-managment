@@ -4,11 +4,12 @@ services:
       context: .
       dockerfile: src/Tracer.Api/Dockerfile
     ports:
-      - "5000:8080"
+      - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sql-server;Database=TracerDb;User Id=sa;Password=Your_Password123;TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
+      - Serilog__WriteTo__0__Args__configure__0__Args__serverUrl=http://seq:5341
     depends_on:
       sql-server:
         condition: service_healthy
@@ -19,6 +20,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+        reservations:
+          memory: 128m
 
   sql-server:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -43,6 +50,17 @@ services:
     volumes:
       - redis-data:/data
 
+  seq:
+    image: datalust/seq:latest
+    ports:
+      - "5341:5341"  # Seq ingestion port
+      - "8081:80"    # Seq UI — visit http://localhost:8081
+    environment:
+      - ACCEPT_EULA=Y
+    volumes:
+      - seq-data:/data
+
 volumes:
   sql-data:
   redis-data:
+  seq-data:

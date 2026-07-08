@@ -36,7 +36,7 @@ public sealed class AssetsController : ControllerBase
     [HttpGet]
     [Authorize(Policy = "Assets.View")]
     [OutputCache(PolicyName = "UserScoped15s")]
-    [EnableRateLimiting("ReadPolicy")]
+    [EnableRateLimiting(RateLimitPolicies.Read)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? searchTerm,
@@ -60,7 +60,7 @@ public sealed class AssetsController : ControllerBase
     /// <summary>Register a new asset (Doc 8 §2.1).</summary>
     [HttpPost]
     [Authorize(Policy = "Assets.Create")]
-    [EnableRateLimiting("WritePolicy")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create(
@@ -78,7 +78,7 @@ public sealed class AssetsController : ControllerBase
     /// <summary>Get asset by ID.</summary>
     [HttpGet("{id:guid}")]
     [Authorize(Policy = "Assets.View")]
-    [EnableRateLimiting("ReadPolicy")]
+    [EnableRateLimiting(RateLimitPolicies.Read)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
