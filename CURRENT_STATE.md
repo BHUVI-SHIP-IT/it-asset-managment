@@ -28,10 +28,19 @@ We are building an Enterprise IT Asset Management system using:
    - Built an asynchronous reporting engine (`FinancialReportJob`) to generate financial CSV reports on demand and track status via `ReportExport`.
    - Applied the `AddFinancialFeatures` EF Core migration.
 
-## 🚀 Next Steps (M6 Notifications)
-The immediate next step is to begin Phase **M6 Notifications**. This involves:
-1. **Notification Channels:** Setting up a notification center with webhooks (Slack/Teams/Email).
-2. **Tenant Configuration:** Adding tenant-level settings for custom fields and notification rules.
+## 🚀 Next Steps (M6 Notifications - In Progress)
+We are currently in the middle of Phase **M6 Notifications**.
+
+**Completed in M6 so far:**
+- Notification channel abstractions and real delivery implementations (Slack, Teams, SMTP).
+- Domain aggregates and EF Core configurations for Notifications, Tenant Settings, and Custom Fields.
+- Initial CQRS Application logic (Notification DTOs, Queries).
+
+**Remaining in M6:**
+1. Complete CQRS commands (e.g., `DeleteNotificationCommand`).
+2. Create API Controllers (`NotificationsController`, `SettingsController`, `CustomFieldsController`).
+3. Generate and apply EF Core migration (`AddNotificationsAndTenantConfig`).
+4. Unit tests and verification.
 
 ## 📂 Important Files & Context
 - **Roadmap:** Check `ROADMAP.md` (copied from my internal state) for the full module dependency graph.
