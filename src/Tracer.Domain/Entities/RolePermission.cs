@@ -1,0 +1,13 @@
+namespace Tracer.Domain.Entities;
+
+/// <summary>
+/// Join entity mapping Roles to Permissions.
+/// </summary>
+public class RolePermission
+{
+    public int RoleId { get; set; }
+    public Role Role { get; set; } = null!;
+
+    public int PermissionId { get; set; }
+    public Permission Permission { get; set; } = null!;
+}

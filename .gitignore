@@ -1,0 +1,47 @@
+## .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.docstates
+project.lock.json
+*.nuget.props
+*.nuget.targets
+
+## EF Core Migrations artifacts
+*.mdf
+*.ldf
+
+## IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
+
+## Node / Angular
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Docker
+docker-volumes/
+
+## User secrets
+secrets.json
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+TestResults/
+coverage/
