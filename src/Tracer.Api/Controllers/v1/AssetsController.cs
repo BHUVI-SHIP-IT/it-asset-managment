@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 using Tracer.Application.Common.Interfaces;
 using Tracer.Application.Features.Assets.Commands.CheckinAsset;
 using Tracer.Application.Features.Assets.Commands.CheckoutAsset;
@@ -33,6 +35,8 @@ public sealed class AssetsController : ControllerBase
     /// <summary>Get paginated list of assets.</summary>
     [HttpGet]
     [Authorize(Policy = "Assets.View")]
+    [OutputCache(PolicyName = "UserScoped15s")]
+    [EnableRateLimiting("ReadPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? searchTerm,
@@ -56,6 +60,7 @@ public sealed class AssetsController : ControllerBase
     /// <summary>Register a new asset (Doc 8 §2.1).</summary>
     [HttpPost]
     [Authorize(Policy = "Assets.Create")]
+    [EnableRateLimiting("WritePolicy")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create(
@@ -73,6 +78,7 @@ public sealed class AssetsController : ControllerBase
     /// <summary>Get asset by ID.</summary>
     [HttpGet("{id:guid}")]
     [Authorize(Policy = "Assets.View")]
+    [EnableRateLimiting("ReadPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)

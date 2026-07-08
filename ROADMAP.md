@@ -46,8 +46,8 @@ These are ratified from Docs 1–12 and should not change during build without a
 | **M3 Asset Core** ✅ | Asset CRUD + Checkout/Checkin + Audit | Full asset aggregate; checkout workflow with EULA + temporal audit; Outbox → email fires |
 | **M4 License & Inv** ✅ | Licenses, Components, Accessories, Consumables | Seat allocation, true-up job, FIFO consumables |
 | **M5 Financial** ✅ | Depreciation + async exports | Depreciation jobs; report builder with Hangfire polling; CSV/PDF export |
-| **M6 Notifications** 🔄 | Multi-channel alerts + tenant config | Email/Slack/Teams webhooks; settings; custom fields; notification center (In Progress) |
-| **M7 Hardening** | Security, perf, a11y, DR | OWASP ZAP clean; k6 5k users @ <100ms; WCAG 2.1 AA; DR drill passes RPO/RTO |
+| **M6 Notifications** ✅ | Multi-channel alerts + tenant config | Email/Slack/Teams webhooks; settings; custom fields; notification center |
+| **M7 Hardening** 🔄 | Security, perf, a11y, DR | OWASP ZAP clean; k6 5k users @ <100ms; WCAG 2.1 AA; DR drill passes RPO/RTO (In Progress) |
 | **M8 UAT & Go-Live** | Business sign-off + prod cutover | UAT approved; idempotent migration script; blue/green prod deploy |
 
 ## Part 4 — Module Dependency Graph & Critical Path
@@ -61,7 +61,8 @@ M0 Foundation (Domain base + DbContext + CI/CD) ✅
 → Checkout/Checkin workflow (state machine + temporal audit + Outbox email) ✅
 → M4 License & Inv ✅
 → M5 Financial ✅
-→ M6 Notifications 🔄 (NEXT)
+→ M6 Notifications ✅
+→ M7 Hardening 🔄 (NEXT)
 → M8 UAT sign-off → Prod cutover
 
 > [!IMPORTANT]
