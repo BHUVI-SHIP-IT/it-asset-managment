@@ -4,7 +4,7 @@ using FluentValidation;
 using Hangfire;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
-using RedisRateLimiting;
+
 using Serilog;
 using Serilog.Events;
 using Tracer.Api;
@@ -175,34 +175,21 @@ try
 
         // ── Read endpoints — high throughput GET ──
         // 1,000 req/min per user (falls back to IP for anon). Queue 100 to absorb bursts.
-        if (!string.IsNullOrWhiteSpace(redisConn))
+        options.AddPolicy(RateLimitPolicies.Read, ctx =>
         {
-            // Redis-backed sliding window — truly distributed across instances.
-            options.AddRedisSlidingWindowLimiter(RateLimitPolicies.Read, o =>
+            var partitionKey = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? ctx.Connection.RemoteIpAddress?.ToString()
+                ?? "anon";
+            
+            return RateLimitPartition.GetSlidingWindowLimiter(partitionKey, _ => new SlidingWindowRateLimiterOptions
             {
-                o.ConnectionMultiplexerFactory = () =>
-                    StackExchange.Redis.ConnectionMultiplexer.Connect(redisConn);
-                o.PermitLimit = 1000;
-                o.Window = TimeSpan.FromMinutes(1);
-                o.SegmentsPerWindow = 6;
-                o.GetPartitionKey = ctx =>
-                    ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? ctx.Connection.RemoteIpAddress?.ToString()
-                    ?? "anon";
+                PermitLimit = 1000,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 6,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 100
             });
-        }
-
-        else
-        {
-            options.AddSlidingWindowLimiter(RateLimitPolicies.Read, o =>
-            {
-                o.Window = TimeSpan.FromMinutes(1);
-                o.SegmentsPerWindow = 6;
-                o.PermitLimit = 1000;
-                o.QueueLimit = 100;
-                o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            });
-        }
+        });
 
         // ── Write endpoints — mutation (POST/PUT/DELETE) ──
         // 200 req/min per user, queue 20.

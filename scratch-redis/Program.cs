@@ -1,0 +1,1 @@
+using System; using System.Reflection; internal class Program { private static void Main() { var type = typeof(RedisRateLimiting.RedisTokenBucketRateLimiterOptions); Console.WriteLine("Type: " + type.FullName); foreach (var p in type.GetProperties()) { Console.WriteLine("  Property: " + p.PropertyType.Name + " " + p.Name); } } }
