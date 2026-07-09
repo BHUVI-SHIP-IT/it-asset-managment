@@ -1,0 +1,58 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Manufacturer' : 'New Manufacturer' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="dialog-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" placeholder="e.g., Dell">
+      @if (form.get('name')?.hasError('required')) {
+        <mat-error>Name is required</mat-error>
+      }
+      @if (form.get('name')?.hasError('maxlength')) {
+        <mat-error>Name cannot exceed 100 characters</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Website URL</mat-label>
+      <input matInput formControlName="url">
+      @if (form.get('url')?.hasError('maxlength')) {
+        <mat-error>URL cannot exceed 250 characters</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Support URL</mat-label>
+      <input matInput formControlName="supportUrl">
+      @if (form.get('supportUrl')?.hasError('maxlength')) {
+        <mat-error>Support URL cannot exceed 250 characters</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Support Phone</mat-label>
+      <input matInput formControlName="supportPhone">
+      @if (form.get('supportPhone')?.hasError('maxlength')) {
+        <mat-error>Phone cannot exceed 50 characters</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Support Email</mat-label>
+      <input matInput formControlName="supportEmail">
+      @if (form.get('supportEmail')?.hasError('maxlength')) {
+        <mat-error>Email cannot exceed 100 characters</mat-error>
+      }
+      @if (form.get('supportEmail')?.hasError('email')) {
+        <mat-error>Must be a valid email</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">
+    {{ isEditMode ? 'Update' : 'Create' }}
+  </button>
+</mat-dialog-actions>

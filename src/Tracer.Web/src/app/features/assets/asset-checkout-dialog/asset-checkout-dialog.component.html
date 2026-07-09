@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>Checkout {{ data.assetName }}</h2>
+
+<mat-dialog-content>
+  <p>Assign this asset to a user.</p>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="dialog-form" style="margin-top: 16px;">
+    <mat-form-field appearance="outline" style="width: 100%;">
+      <mat-label>User ID (GUID)</mat-label>
+      <input matInput formControlName="userId" placeholder="e.g., 123e4567-e89b-12d3-a456-426614174000">
+      @if (form.get('userId')?.hasError('required')) {
+        <mat-error>User ID is required</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">
+    Checkout
+  </button>
+</mat-dialog-actions>

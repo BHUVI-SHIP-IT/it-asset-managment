@@ -1,0 +1,85 @@
+<div class="settings-container">
+  <div class="page-header">
+    <h1>Tenant Settings</h1>
+    <p>Configure integration and communication settings for your organization.</p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-shade">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else {
+    <mat-tab-group animationDuration="0ms">
+      
+      <mat-tab label="Webhooks">
+        <div class="tab-content">
+          <mat-card class="settings-card">
+            <mat-card-header>
+              <mat-card-title>Slack Integration</mat-card-title>
+              <mat-card-subtitle>Send notifications to a Slack channel</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <form [formGroup]="webhookForm" (ngSubmit)="saveWebhookSettings()">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Slack Webhook URL</mat-label>
+                  <input matInput formControlName="SlackWebhookUrl" placeholder="https://hooks.slack.com/services/...">
+                </mat-form-field>
+                <div class="form-actions">
+                  <button mat-raised-button color="primary" type="submit" [disabled]="submitting()" *hasPermission="'Settings.Manage'">
+                    {{ submitting() ? 'Saving...' : 'Save Webhook' }}
+                  </button>
+                </div>
+              </form>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Email (SMTP)">
+        <div class="tab-content">
+          <mat-card class="settings-card">
+            <mat-card-header>
+              <mat-card-title>SMTP Server</mat-card-title>
+              <mat-card-subtitle>Configure outgoing email settings</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <form [formGroup]="smtpForm" (ngSubmit)="saveSmtpSettings()">
+                
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>SMTP Host</mat-label>
+                    <input matInput formControlName="SmtpHost" placeholder="smtp.example.com">
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="small-width">
+                    <mat-label>SMTP Port</mat-label>
+                    <input matInput formControlName="SmtpPort" placeholder="587">
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>SMTP Username</mat-label>
+                    <input matInput formControlName="SmtpUser">
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>SMTP Password</mat-label>
+                    <input matInput formControlName="SmtpPassword" type="password">
+                  </mat-form-field>
+                </div>
+
+                <div class="form-actions">
+                  <button mat-raised-button color="primary" type="submit" [disabled]="submitting()" *hasPermission="'Settings.Manage'">
+                    {{ submitting() ? 'Saving...' : 'Save SMTP' }}
+                  </button>
+                </div>
+              </form>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  }
+</div>

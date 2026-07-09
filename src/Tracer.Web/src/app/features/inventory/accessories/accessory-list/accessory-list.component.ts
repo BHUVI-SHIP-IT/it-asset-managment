@@ -1,0 +1,106 @@
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Observable } from 'rxjs';
+
+import { BaseTableComponent, PaginatedResult } from '../../../../shared/components/base-table/base-table.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+import { Accessory, AccessoryService } from '../accessory.service';
+import { AccessoryFormDialogComponent } from '../accessory-form-dialog/accessory-form-dialog.component';
+
+@Component({
+  selector: 'app-accessory-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    HasPermissionDirective
+  ],
+  templateUrl: './accessory-list.component.html',
+  styleUrls: ['./accessory-list.component.scss']
+})
+export class AccessoryListComponent extends BaseTableComponent<Accessory> implements OnInit {
+  private accessoryService = inject(AccessoryService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
+  displayedColumns = ['name', 'totalQuantity', 'purchaseCost', 'actions'];
+
+  ngOnInit(): void {
+    this.loadData();
+  }
+
+  protected override fetchData(page: number, size: number, sort: string, order: string): Observable<PaginatedResult<Accessory>> {
+    return this.accessoryService.getAccessories(page, size, sort, order);
+  }
+
+  openCreateDialog(): void {
+    const dialogRef = this.dialog.open(AccessoryFormDialogComponent, {
+      width: '500px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.accessoryService.createAccessory(result).subscribe({
+          next: () => {
+            this.snackBar.open('Accessory created successfully', 'Close', { duration: 3000 });
+            this.loadData();
+          },
+          error: (err) => {
+            this.snackBar.open(`Error: ${err.message || 'Failed to create accessory'}`, 'Close', { duration: 5000 });
+          }
+        });
+      }
+    });
+  }
+
+  openEditDialog(accessory: Accessory): void {
+    const dialogRef = this.dialog.open(AccessoryFormDialogComponent, {
+      width: '500px',
+      data: { accessory }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.accessoryService.updateAccessory(accessory.id, result).subscribe({
+          next: () => {
+            this.snackBar.open('Accessory updated successfully', 'Close', { duration: 3000 });
+            this.loadData();
+          },
+          error: (err) => {
+            this.snackBar.open(`Error: ${err.message || 'Failed to update accessory'}`, 'Close', { duration: 5000 });
+          }
+        });
+      }
+    });
+  }
+
+  deleteAccessoryItem(accessory: Accessory): void {
+    if (confirm(`Are you sure you want to delete the accessory '${accessory.name}'?`)) {
+      this.accessoryService.deleteAccessory(accessory.id).subscribe({
+        next: () => {
+          this.snackBar.open('Accessory deleted successfully', 'Close', { duration: 3000 });
+          this.loadData();
+        },
+        error: (err) => {
+          this.snackBar.open(`Error: ${err.message || 'Failed to delete accessory'}`, 'Close', { duration: 5000 });
+        }
+      });
+    }
+  }
+}

@@ -1,0 +1,40 @@
+<button mat-icon-button [matMenuTriggerFor]="alertsMenu" *hasPermission="'Notifications.View'">
+  <mat-icon [matBadge]="unreadCount() > 0 ? unreadCount() : ''" matBadgeColor="warn">
+    notifications
+  </mat-icon>
+</button>
+
+<mat-menu #alertsMenu="matMenu" xPosition="before" class="alerts-menu">
+  <div class="alerts-header">
+    <h3>Notifications</h3>
+    <button mat-icon-button (click)="loadNotifications(); $event.stopPropagation()" matTooltip="Refresh">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+  
+  <mat-divider></mat-divider>
+
+  @if (notifications().length === 0) {
+    <div class="empty-alerts">
+      No notifications
+    </div>
+  } @else {
+    <div class="alerts-list">
+      @for (notification of notifications(); track notification.id) {
+        <div class="alert-item" [class.unread]="!notification.isRead">
+          <div class="alert-content">
+            <div class="alert-type">{{ notification.type }}</div>
+            <div class="alert-message">{{ notification.message }}</div>
+            <div class="alert-time">{{ notification.createdAtUtc | date:'short' }}</div>
+          </div>
+          @if (!notification.isRead) {
+            <button mat-icon-button (click)="markAsRead(notification, $event)" matTooltip="Mark as read" class="read-btn">
+              <mat-icon color="primary">check_circle</mat-icon>
+            </button>
+          }
+        </div>
+        <mat-divider></mat-divider>
+      }
+    </div>
+  }
+</mat-menu>

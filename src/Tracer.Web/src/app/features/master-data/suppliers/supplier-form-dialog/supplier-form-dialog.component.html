@@ -1,0 +1,50 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Supplier' : 'New Supplier' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="dialog-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" placeholder="e.g., CDW">
+      @if (form.get('name')?.hasError('required')) {
+        <mat-error>Name is required</mat-error>
+      }
+      @if (form.get('name')?.hasError('maxlength')) {
+        <mat-error>Name cannot exceed 100 characters</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Contact Name</mat-label>
+      <input matInput formControlName="contactName">
+      @if (form.get('contactName')?.hasError('maxlength')) {
+        <mat-error>Contact name cannot exceed 100 characters</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Phone</mat-label>
+      <input matInput formControlName="phone">
+      @if (form.get('phone')?.hasError('maxlength')) {
+        <mat-error>Phone cannot exceed 50 characters</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email">
+      @if (form.get('email')?.hasError('maxlength')) {
+        <mat-error>Email cannot exceed 100 characters</mat-error>
+      }
+      @if (form.get('email')?.hasError('email')) {
+        <mat-error>Must be a valid email</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">
+    {{ isEditMode ? 'Update' : 'Create' }}
+  </button>
+</mat-dialog-actions>

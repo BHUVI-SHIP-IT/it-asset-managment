@@ -1,0 +1,97 @@
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+  }
+}
+
+.filter-bar {
+  display: flex;
+  gap: 16px;
+  padding: 16px 16px 0 16px;
+  background: white;
+  border-radius: 4px;
+  flex-wrap: wrap;
+
+  .filter-field {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+.table-container {
+  position: relative;
+  min-height: 200px;
+  background: white;
+  border-radius: 4px;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-column {
+  width: 140px;
+  text-align: right;
+  padding-right: 16px !important;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  
+  &.status-deployable {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  &.status-pending {
+    background-color: #fff3e0;
+    color: #e65100;
+  }
+  
+  &.status-undeployable {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+
+  &.status-deployed {
+    background-color: #e3f2fd;
+    color: #1565c0;
+  }
+
+  &.status-archived {
+    background-color: #eeeeee;
+    color: #424242;
+  }
+}

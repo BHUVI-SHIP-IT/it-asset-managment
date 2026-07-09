@@ -1,0 +1,115 @@
+<div class="detail-container">
+  @if (loading()) {
+    <div class="loading-shade">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else if (asset()) {
+    <div class="page-header">
+      <div class="header-content">
+        <button mat-icon-button routerLink="/assets" class="back-button">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="title-section">
+          <h1>{{ asset()!.name }}</h1>
+          <span class="asset-tag">{{ asset()!.assetTag }}</span>
+          <span class="status-badge status-{{ asset()!.status.toLowerCase() }}">{{ asset()!.status }}</span>
+        </div>
+      </div>
+      <div class="actions-bar">
+        <button mat-raised-button color="primary" 
+                *hasPermission="'Assets.CheckOut'"
+                (click)="openCheckoutDialog()">
+          <mat-icon>assignment_ind</mat-icon>
+          Checkout
+        </button>
+        <button mat-raised-button
+                *hasPermission="'Assets.CheckIn'"
+                (click)="openCheckinDialog()">
+          <mat-icon>assignment_return</mat-icon>
+          Checkin
+        </button>
+        <button mat-icon-button color="primary" 
+                *hasPermission="'Assets.Edit'"
+                [routerLink]="['/assets', asset()!.id, 'edit']">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <mat-card class="detail-card">
+      <mat-tab-group animationDuration="0ms">
+        
+        <!-- Specs Tab -->
+        <mat-tab label="Specs">
+          <div class="tab-content specs-grid">
+            <div class="spec-group">
+              <label>Serial Number</label>
+              <div class="value">{{ asset()!.serialNumber || 'N/A' }}</div>
+            </div>
+            
+            <div class="spec-group">
+              <label>Purchase Cost</label>
+              <div class="value">{{ asset()!.purchaseCost | currency }}</div>
+            </div>
+
+            <div class="spec-group">
+              <label>Purchase Date</label>
+              <div class="value">{{ (asset()!.purchaseDate | date:'mediumDate') || 'N/A' }}</div>
+            </div>
+
+            <div class="spec-group">
+              <label>Notes</label>
+              <div class="value notes-value">{{ asset()!.notes || 'No notes.' }}</div>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Assignments Tab (Placeholder for now) -->
+        <mat-tab label="Assignments">
+          <div class="tab-content">
+            <p>Current Assignee: <strong>{{ asset()!.assignedUserId || 'Unassigned' }}</strong></p>
+            <p>Checked out at: {{ (asset()!.checkedOutAtUtc | date:'medium') || 'N/A' }}</p>
+            <p>Last check-in at: {{ (asset()!.lastCheckinAtUtc | date:'medium') || 'N/A' }}</p>
+            <!-- In the future, a grid of AssignmentHistory goes here -->
+          </div>
+        </mat-tab>
+
+        <!-- Audit Tab -->
+        <mat-tab label="Audit History">
+          <div class="tab-content">
+            <table mat-table [dataSource]="history()" class="mat-elevation-z1">
+              <ng-container matColumnDef="validFrom">
+                <th mat-header-cell *matHeaderCellDef> Valid From </th>
+                <td mat-cell *matCellDef="let element"> {{element.validFrom | date:'short'}} </td>
+              </ng-container>
+
+              <ng-container matColumnDef="validTo">
+                <th mat-header-cell *matHeaderCellDef> Valid To </th>
+                <td mat-cell *matCellDef="let element"> {{element.validTo | date:'short'}} </td>
+              </ng-container>
+
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef> Name </th>
+                <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+              </ng-container>
+
+              <ng-container matColumnDef="assignedUserId">
+                <th mat-header-cell *matHeaderCellDef> Assigned To </th>
+                <td mat-cell *matCellDef="let element"> {{element.assignedUserId || 'Unassigned'}} </td>
+              </ng-container>
+
+              <ng-container matColumnDef="statusLabelId">
+                <th mat-header-cell *matHeaderCellDef> Status ID </th>
+                <td mat-cell *matCellDef="let element"> {{element.statusLabelId}} </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedHistoryColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedHistoryColumns;"></tr>
+            </table>
+          </div>
+        </mat-tab>
+
+      </mat-tab-group>
+    </mat-card>
+  }
+</div>

@@ -1,0 +1,107 @@
+<div class="form-container">
+  <div class="page-header">
+    <div class="header-content">
+      <button mat-icon-button routerLink="/assets" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>{{ isEditMode ? 'Edit Asset' : 'New Asset' }}</h1>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-shade">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else {
+    <mat-card class="form-card">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="asset-form">
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Asset Tag</mat-label>
+            <input matInput formControlName="assetTag" placeholder="e.g., AST-0001">
+            @if (form.get('assetTag')?.hasError('required')) {
+              <mat-error>Asset tag is required</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name" placeholder="e.g., MacBook Pro 14">
+            @if (form.get('name')?.hasError('required')) {
+              <mat-error>Name is required</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="statusLabelId">
+              <mat-option value="unoccupied">Unoccupied</mat-option>
+              <mat-option value="occupied">Occupied</mat-option>
+              <mat-option value="requested">Requested</mat-option>
+            </mat-select>
+            @if (form.get('statusLabelId')?.hasError('required')) {
+              <mat-error>Status is required</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Location</mat-label>
+            <mat-select formControlName="locationId">
+              <mat-option [value]="null">-- None --</mat-option>
+              <mat-option value="headquarters">Headquarters</mat-option>
+              <mat-option value="branch-office">Branch Office</mat-option>
+              <mat-option value="remote">Remote</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Serial Number</mat-label>
+            <input matInput formControlName="serialNumber">
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Purchase Cost</mat-label>
+            <input matInput type="number" formControlName="purchaseCost">
+            @if (form.get('purchaseCost')?.hasError('required')) {
+              <mat-error>Cost is required</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Purchase Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="purchaseDate">
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <!-- Notes are only updatable via PUT in current API design based on UpdateAssetCommand -->
+        @if (isEditMode) {
+          <div class="form-row full-width-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Notes</mat-label>
+              <textarea matInput formControlName="notes" rows="3"></textarea>
+            </mat-form-field>
+          </div>
+        }
+
+        <div class="form-actions">
+          <button mat-button type="button" routerLink="/assets">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || submitting()">
+            {{ submitting() ? 'Saving...' : 'Save Asset' }}
+          </button>
+        </div>
+
+      </form>
+    </mat-card>
+  }
+</div>
