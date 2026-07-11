@@ -12,6 +12,9 @@ public interface IApplicationDbContext
     DbSet<Department> Departments { get; }
     DbSet<AssetModel> AssetModels { get; }
     DbSet<StatusLabel> StatusLabels { get; }
+    DbSet<Company> Companies { get; }
+    DbSet<ApplicationUser> Users { get; }
+    DbSet<Role> Roles { get; }
     DbSet<Tracer.Domain.Aggregates.AssetAggregate.Asset> Assets { get; }
 
     DbSet<Tracer.Domain.Aggregates.LicenseAggregate.SoftwareLicense> SoftwareLicenses { get; }

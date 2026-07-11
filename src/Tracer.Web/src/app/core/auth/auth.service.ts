@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
+import { satisfiesPermission } from './permissions';
 
 export interface LoginResponse {
   accessToken: string;
@@ -31,7 +32,8 @@ export class AuthService {
           try {
             // Decode JWT payload to extract permissions
             const payload = JSON.parse(atob(response.accessToken.split('.')[1]));
-            const perms = payload.permissions || [];
+            const raw = payload.permissions ?? [];
+            const perms = Array.isArray(raw) ? raw : [raw];
             this.permissionsSignal.set(perms);
             localStorage.setItem('permissions', JSON.stringify(perms));
           } catch (e) {
@@ -58,6 +60,6 @@ export class AuthService {
   }
 
   hasPermission(permission: string): boolean {
-    return this.permissionsSignal().includes(permission);
+    return satisfiesPermission(this.permissionsSignal(), permission);
   }
 }

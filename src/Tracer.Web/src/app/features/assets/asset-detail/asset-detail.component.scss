@@ -133,3 +133,19 @@
   align-items: center;
   justify-content: center;
 }
+
+.history-loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.history-empty {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.history-table {
+  width: 100%;
+}

@@ -12,8 +12,13 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { HttpClient } from '@angular/common/http';
-import { AssetService } from '../asset.service';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { AssetService, CreateAssetCommand, UpdateAssetCommand } from '../asset.service';
+
+interface LookupItem {
+  id: string | number;
+  name: string;
+}
 
 @Component({
   selector: 'app-asset-form',
@@ -50,10 +55,9 @@ export class AssetFormComponent implements OnInit {
   loading = signal(false);
   submitting = signal(false);
 
-  // Lookup data
-  assetModels = signal<any[]>([]);
-  statusLabels = signal<any[]>([]);
-  locations = signal<any[]>([]);
+  assetModels = signal<LookupItem[]>([]);
+  statusLabels = signal<LookupItem[]>([]);
+  locations = signal<LookupItem[]>([]);
 
   ngOnInit(): void {
     this.initForm();
@@ -70,25 +74,29 @@ export class AssetFormComponent implements OnInit {
     this.form = this.fb.group({
       assetTag: ['', [Validators.required]],
       name: ['', [Validators.required]],
-      assetModelId: [''],
-      statusLabelId: ['', [Validators.required]],
+      assetModelId: [null as string | null, [Validators.required]],
+      statusLabelId: [null as number | null, [Validators.required]],
       purchaseCost: [0, [Validators.required, Validators.min(0)]],
-      locationId: [''],
+      locationId: [null as string | null],
       serialNumber: [''],
-      purchaseDate: [''],
+      purchaseDate: [null as Date | null],
       notes: ['']
     });
 
     if (this.isEditMode) {
-      this.form.get('assetTag')?.disable(); // AssetTag is create-only in this design
+      this.form.get('assetTag')?.disable();
     }
   }
 
   private loadLookups(): void {
-    // Quick fetching of lookups using HTTP client to avoid circular/missing service issues for now
-    this.http.get<any>('/api/v1/asset-models?pageSize=100').subscribe(res => this.assetModels.set(Array.isArray(res) ? res : res.items || []));
-    this.http.get<any>('/api/v1/status-labels?pageSize=100').subscribe(res => this.statusLabels.set(Array.isArray(res) ? res : res.items || []));
-    this.http.get<any>('/api/v1/locations?pageSize=100').subscribe(res => this.locations.set(Array.isArray(res) ? res : res.items || []));
+    const params = new HttpParams().set('pageNumber', '1').set('pageSize', '100');
+
+    this.http.get<{ items?: LookupItem[] } | LookupItem[]>('/api/v1/asset-models', { params })
+      .subscribe(res => this.assetModels.set(Array.isArray(res) ? res : res.items || []));
+    this.http.get<{ items?: LookupItem[] } | LookupItem[]>('/api/v1/status-labels', { params })
+      .subscribe(res => this.statusLabels.set(Array.isArray(res) ? res : res.items || []));
+    this.http.get<{ items?: LookupItem[] } | LookupItem[]>('/api/v1/locations', { params })
+      .subscribe(res => this.locations.set(Array.isArray(res) ? res : res.items || []));
   }
 
   private loadAsset(id: string): void {
@@ -101,15 +109,13 @@ export class AssetFormComponent implements OnInit {
           assetModelId: asset.assetModelId,
           statusLabelId: asset.statusLabelId,
           purchaseCost: asset.purchaseCost,
-          locationId: asset.locationId,
-          serialNumber: asset.serialNumber,
-          purchaseDate: asset.purchaseDate,
-          notes: asset.notes
+          locationId: asset.locationId ?? null,
+          serialNumber: asset.serialNumber ?? '',
+          purchaseDate: asset.purchaseDate ? new Date(asset.purchaseDate) : null,
+          notes: asset.notes ?? ''
         });
-        
-        // Disable asset tag after patch in edit mode
+
         this.form.get('assetTag')?.disable();
-        
         this.loading.set(false);
       },
       error: () => {
@@ -120,34 +126,70 @@ export class AssetFormComponent implements OnInit {
     });
   }
 
+  /** Build a payload that matches CreateAssetCommand / UpdateAssetCommand JSON types. */
+  private buildPayload(): CreateAssetCommand {
+    const raw = this.form.getRawValue();
+    const emptyToNull = (value: string | null | undefined): string | undefined =>
+      value && String(value).trim() ? String(value).trim() : undefined;
+
+    return {
+      assetTag: String(raw.assetTag).trim(),
+      name: String(raw.name).trim(),
+      assetModelId: String(raw.assetModelId),
+      statusLabelId: Number(raw.statusLabelId),
+      purchaseCost: Number(raw.purchaseCost),
+      locationId: emptyToNull(raw.locationId),
+      serialNumber: emptyToNull(raw.serialNumber),
+      purchaseDate: raw.purchaseDate
+        ? new Date(raw.purchaseDate).toISOString()
+        : undefined
+    };
+  }
+
   onSubmit(): void {
     if (this.form.invalid) return;
 
     this.submitting.set(true);
-    const formValue = this.form.getRawValue(); // gets disabled fields too
+    const payload = this.buildPayload();
 
     if (this.isEditMode && this.assetId) {
-      this.assetService.updateAsset(this.assetId, { ...formValue, id: this.assetId }).subscribe({
+      const updateCommand: UpdateAssetCommand = {
+        ...payload,
+        id: this.assetId,
+        notes: emptyToUndefined(this.form.getRawValue().notes)
+      };
+
+      this.assetService.updateAsset(this.assetId, updateCommand).subscribe({
         next: () => {
           this.snackBar.open('Asset updated successfully', 'Close', { duration: 3000 });
           this.router.navigate(['/assets', this.assetId]);
         },
         error: (err) => {
-          this.snackBar.open(`Error: ${err.message || 'Failed to update asset'}`, 'Close', { duration: 5000 });
+          this.snackBar.open(`Error: ${err.error?.detail || err.message || 'Failed to update asset'}`, 'Close', { duration: 5000 });
           this.submitting.set(false);
         }
       });
     } else {
-      this.assetService.createAsset(formValue).subscribe({
+      // Body is the command itself — do NOT wrap as { command: ... }.
+      // ASP.NET [FromBody] CreateAssetCommand command binds the whole JSON body.
+      this.assetService.createAsset(payload).subscribe({
         next: (newId) => {
           this.snackBar.open('Asset created successfully', 'Close', { duration: 3000 });
           this.router.navigate(['/assets', newId]);
         },
         error: (err) => {
-          this.snackBar.open(`Error: ${err.message || 'Failed to create asset'}`, 'Close', { duration: 5000 });
+          const detail = err.error?.detail
+            || (err.error?.errors && JSON.stringify(err.error.errors))
+            || err.message
+            || 'Failed to create asset';
+          this.snackBar.open(`Error: ${detail}`, 'Close', { duration: 5000 });
           this.submitting.set(false);
         }
       });
     }
   }
+}
+
+function emptyToUndefined(value: string | null | undefined): string | undefined {
+  return value && String(value).trim() ? String(value).trim() : undefined;
 }

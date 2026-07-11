@@ -1,14 +1,15 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tracer.Shared.Authorization;
 using Tracer.Application.Features.StatusLabels.Commands;
 using Tracer.Application.Features.StatusLabels.Queries;
 
 namespace Tracer.Api.Controllers.v1;
 
 [ApiController]
-[Route("api/v1/[controller]")]
-[Authorize(Policy = "StatusLabels.View")]
+[Route("api/v1/status-labels")]
+[Authorize(Policy = Permissions.StatusLabels.View)]
 public class StatusLabelsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -19,10 +20,21 @@ public class StatusLabelsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
         var result = await _mediator.Send(new GetAllStatusLabelsQuery());
-        return Ok(result);
+        var page = pageNumber < 1 ? 1 : pageNumber;
+        var size = pageSize < 1 ? 10 : pageSize;
+        var items = result.Skip((page - 1) * size).Take(size).ToList();
+        return Ok(new
+        {
+            items,
+            totalCount = result.Count,
+            pageNumber = page,
+            pageSize = size
+        });
     }
 
     [HttpGet("{id}")]
@@ -33,7 +45,7 @@ public class StatusLabelsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "StatusLabels.Create")]
+    [Authorize(Policy = Permissions.StatusLabels.Create)]
     public async Task<IActionResult> Create(CreateStatusLabelCommand command)
     {
         var id = await _mediator.Send(command);
@@ -41,7 +53,7 @@ public class StatusLabelsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Policy = "StatusLabels.Update")]
+    [Authorize(Policy = Permissions.StatusLabels.Update)]
     public async Task<IActionResult> Update(int id, UpdateStatusLabelCommand command)
     {
         if (id != command.Id) return BadRequest();
@@ -50,7 +62,7 @@ public class StatusLabelsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = "StatusLabels.Delete")]
+    [Authorize(Policy = Permissions.StatusLabels.Delete)]
     public async Task<IActionResult> Delete(int id)
     {
         var success = await _mediator.Send(new DeleteStatusLabelCommand(id));

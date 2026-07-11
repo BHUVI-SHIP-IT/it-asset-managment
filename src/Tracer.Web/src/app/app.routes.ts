@@ -29,6 +29,10 @@ export const routes: Routes = [
         loadChildren: () => import('./features/assets/assets.routes').then(m => m.ASSETS_ROUTES)
       },
       {
+        path: 'users',
+        loadComponent: () => import('./features/users/user-list/user-list.component').then(m => m.UserListComponent)
+      },
+      {
         path: 'master-data',
         loadChildren: () => import('./features/master-data/master-data.routes').then(m => m.routes)
       },

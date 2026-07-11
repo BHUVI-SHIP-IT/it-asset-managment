@@ -1,7 +1,7 @@
 <div class="list-container">
   <div class="header-container">
     <h1>Custom Fields</h1>
-    <button mat-raised-button color="primary" (click)="openCreateDialog()" *hasPermission="'CustomFields.Manage'">
+    <button mat-raised-button color="primary" (click)="openCreateDialog()" *hasPermission="permissions.CustomFields.Manage">
       <mat-icon>add</mat-icon>
       Add Custom Field
     </button>
@@ -52,10 +52,10 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let element" class="actions-cell">
-          <button mat-icon-button color="primary" (click)="openEditDialog(element)" *hasPermission="'CustomFields.Manage'" matTooltip="Edit">
+          <button mat-icon-button color="primary" (click)="openEditDialog(element)" *hasPermission="permissions.CustomFields.Manage" matTooltip="Edit">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="warn" (click)="deleteField(element)" *hasPermission="'CustomFields.Manage'" matTooltip="Delete">
+          <button mat-icon-button color="warn" (click)="deleteField(element)" *hasPermission="permissions.CustomFields.Manage" matTooltip="Delete">
             <mat-icon>delete</mat-icon>
           </button>
         </td>

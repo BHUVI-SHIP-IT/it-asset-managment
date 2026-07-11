@@ -1,3 +1,4 @@
+import { Permissions } from '../../../core/auth/permissions';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -29,6 +30,8 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
   styleUrls: ['./custom-field-list.component.scss']
 })
 export class CustomFieldListComponent implements OnInit {
+  readonly permissions = Permissions;
+
   private customFieldService = inject(CustomFieldService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);

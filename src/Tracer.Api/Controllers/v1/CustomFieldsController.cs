@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tracer.Shared.Authorization;
 using Tracer.Application.Features.CustomFields.Commands;
 using Tracer.Application.Features.CustomFields.Queries;
 using Tracer.Domain.Aggregates.CustomFieldAggregate;
@@ -23,7 +24,7 @@ public sealed class CustomFieldsController : ControllerBase
 
     /// <summary>Lists all custom field definitions for the current tenant.</summary>
     [HttpGet]
-    [Authorize(Policy = "CustomFields.View")]
+    [Authorize(Policy = Permissions.CustomFields.View)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
@@ -33,7 +34,7 @@ public sealed class CustomFieldsController : ControllerBase
 
     /// <summary>Gets all custom field values for a specific entity (e.g. an Asset ID).</summary>
     [HttpGet("values/{entityId:guid}")]
-    [Authorize(Policy = "CustomFields.View")]
+    [Authorize(Policy = Permissions.CustomFields.View)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByEntity(Guid entityId, CancellationToken cancellationToken)
     {
@@ -43,7 +44,7 @@ public sealed class CustomFieldsController : ControllerBase
 
     /// <summary>Creates a new custom field definition for the current tenant.</summary>
     [HttpPost]
-    [Authorize(Policy = "CustomFields.Manage")]
+    [Authorize(Policy = Permissions.CustomFields.Manage)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateCustomFieldRequest body, CancellationToken cancellationToken)
@@ -64,7 +65,7 @@ public sealed class CustomFieldsController : ControllerBase
 
     /// <summary>Updates an existing custom field definition.</summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = "CustomFields.Manage")]
+    [Authorize(Policy = Permissions.CustomFields.Manage)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -87,7 +88,7 @@ public sealed class CustomFieldsController : ControllerBase
 
     /// <summary>Soft-deletes a custom field definition (Doc 4 §1.2).</summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "CustomFields.Manage")]
+    [Authorize(Policy = Permissions.CustomFields.Manage)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
@@ -102,7 +103,7 @@ public sealed class CustomFieldsController : ControllerBase
     /// Returns the value record ID.
     /// </summary>
     [HttpPut("{id:guid}/values/{entityId:guid}")]
-    [Authorize(Policy = "CustomFields.Manage")]
+    [Authorize(Policy = Permissions.CustomFields.Manage)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> SetValue(Guid id, Guid entityId, [FromBody] SetCustomFieldValueRequest body, CancellationToken cancellationToken)
     {

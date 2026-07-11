@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tracer.Application\Tracer.Application.csproj" />
+    <ProjectReference Include="..\Tracer.Shared\Tracer.Shared.csproj" />
   </ItemGroup>
 
 </Project>

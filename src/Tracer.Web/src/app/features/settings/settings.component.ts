@@ -1,3 +1,4 @@
+import { Permissions } from '../../core/auth/permissions';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -30,6 +31,8 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
   styleUrls: ['./settings.component.scss']
 })
 export class SettingsComponent implements OnInit {
+  readonly permissions = Permissions;
+
   private fb = inject(FormBuilder);
   private settingsService = inject(SettingsService);
   private snackBar = inject(MatSnackBar);

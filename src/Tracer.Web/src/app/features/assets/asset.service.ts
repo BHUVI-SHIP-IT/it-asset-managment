@@ -137,6 +137,7 @@ export interface AssetHistoryDto {
   id: string;
   assetTag: string;
   name: string;
+  status: string;
   statusLabelId: number;
   assignedUserId?: string;
   validFrom: string;

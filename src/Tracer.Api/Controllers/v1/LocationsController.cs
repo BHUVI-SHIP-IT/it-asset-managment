@@ -1,14 +1,15 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tracer.Shared.Authorization;
 using Tracer.Application.Features.Locations.Commands;
 using Tracer.Application.Features.Locations.Queries;
 
 namespace Tracer.Api.Controllers.v1;
 
 [ApiController]
-[Route("api/v1/[controller]")]
-[Authorize(Policy = "Locations.View")]
+[Route("api/v1/locations")]
+[Authorize(Policy = Permissions.Locations.View)]
 public class LocationsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -19,10 +20,21 @@ public class LocationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
         var result = await _mediator.Send(new GetAllLocationsQuery());
-        return Ok(result);
+        var page = pageNumber < 1 ? 1 : pageNumber;
+        var size = pageSize < 1 ? 10 : pageSize;
+        var items = result.Skip((page - 1) * size).Take(size).ToList();
+        return Ok(new
+        {
+            items,
+            totalCount = result.Count,
+            pageNumber = page,
+            pageSize = size
+        });
     }
 
     [HttpGet("{id}")]
@@ -33,7 +45,7 @@ public class LocationsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "Locations.Create")]
+    [Authorize(Policy = Permissions.Locations.Create)]
     public async Task<IActionResult> Create(CreateLocationCommand command)
     {
         var id = await _mediator.Send(command);
@@ -41,7 +53,7 @@ public class LocationsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Policy = "Locations.Update")]
+    [Authorize(Policy = Permissions.Locations.Update)]
     public async Task<IActionResult> Update(Guid id, UpdateLocationCommand command)
     {
         if (id != command.Id) return BadRequest();
@@ -50,7 +62,7 @@ public class LocationsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = "Locations.Delete")]
+    [Authorize(Policy = Permissions.Locations.Delete)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var success = await _mediator.Send(new DeleteLocationCommand(id));

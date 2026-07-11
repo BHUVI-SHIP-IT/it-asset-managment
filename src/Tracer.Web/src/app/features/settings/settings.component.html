@@ -25,7 +25,7 @@
                   <input matInput formControlName="SlackWebhookUrl" placeholder="https://hooks.slack.com/services/...">
                 </mat-form-field>
                 <div class="form-actions">
-                  <button mat-raised-button color="primary" type="submit" [disabled]="submitting()" *hasPermission="'Settings.Manage'">
+                  <button mat-raised-button color="primary" type="submit" [disabled]="submitting()" *hasPermission="permissions.Settings.Manage">
                     {{ submitting() ? 'Saving...' : 'Save Webhook' }}
                   </button>
                 </div>
@@ -70,7 +70,7 @@
                 </div>
 
                 <div class="form-actions">
-                  <button mat-raised-button color="primary" type="submit" [disabled]="submitting()" *hasPermission="'Settings.Manage'">
+                  <button mat-raised-button color="primary" type="submit" [disabled]="submitting()" *hasPermission="permissions.Settings.Manage">
                     {{ submitting() ? 'Saving...' : 'Save SMTP' }}
                   </button>
                 </div>

@@ -22,7 +22,7 @@ export interface UpdateAssetModelCommand {
 })
 export class AssetModelService {
   private http = inject(HttpClient);
-  private baseUrl = '/api/v1/assetmodels';
+  private baseUrl = '/api/v1/asset-models';
 
   getAssetModels(pageNumber: number, pageSize: number, sortColumn?: string, sortDirection?: string): Observable<PaginatedResult<AssetModel>> {
     let params = new HttpParams()

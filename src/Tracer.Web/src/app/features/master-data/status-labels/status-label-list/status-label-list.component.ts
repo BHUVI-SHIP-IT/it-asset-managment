@@ -1,3 +1,4 @@
+import { Permissions } from '../../../../core/auth/permissions';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -34,6 +35,8 @@ import { StatusLabelFormDialogComponent } from '../status-label-form-dialog/stat
   styleUrls: ['./status-label-list.component.scss']
 })
 export class StatusLabelListComponent extends BaseTableComponent<StatusLabel> implements OnInit {
+  readonly permissions = Permissions;
+
   private statusLabelService = inject(StatusLabelService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);

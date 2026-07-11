@@ -1,14 +1,15 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tracer.Shared.Authorization;
 using Tracer.Application.Features.Manufacturers.Commands;
 using Tracer.Application.Features.Manufacturers.Queries;
 
 namespace Tracer.Api.Controllers.v1;
 
 [ApiController]
-[Route("api/v1/[controller]")]
-[Authorize(Policy = "Manufacturers.View")]
+[Route("api/v1/manufacturers")]
+[Authorize(Policy = Permissions.Manufacturers.View)]
 public class ManufacturersController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -19,10 +20,21 @@ public class ManufacturersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
         var result = await _mediator.Send(new GetAllManufacturersQuery());
-        return Ok(result);
+        var page = pageNumber < 1 ? 1 : pageNumber;
+        var size = pageSize < 1 ? 10 : pageSize;
+        var items = result.Skip((page - 1) * size).Take(size).ToList();
+        return Ok(new
+        {
+            items,
+            totalCount = result.Count,
+            pageNumber = page,
+            pageSize = size
+        });
     }
 
     [HttpGet("{id}")]
@@ -33,7 +45,7 @@ public class ManufacturersController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "Manufacturers.Create")]
+    [Authorize(Policy = Permissions.Manufacturers.Create)]
     public async Task<IActionResult> Create(CreateManufacturerCommand command)
     {
         var id = await _mediator.Send(command);
@@ -41,7 +53,7 @@ public class ManufacturersController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Policy = "Manufacturers.Update")]
+    [Authorize(Policy = Permissions.Manufacturers.Update)]
     public async Task<IActionResult> Update(Guid id, UpdateManufacturerCommand command)
     {
         if (id != command.Id) return BadRequest();
@@ -50,7 +62,7 @@ public class ManufacturersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = "Manufacturers.Delete")]
+    [Authorize(Policy = Permissions.Manufacturers.Delete)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var success = await _mediator.Send(new DeleteManufacturerCommand(id));

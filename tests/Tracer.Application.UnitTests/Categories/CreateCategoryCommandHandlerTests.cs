@@ -15,12 +15,14 @@ public class CreateCategoryCommandHandlerTests
         // Arrange
         var contextMock = new Mock<IApplicationDbContext>();
         var dbSetMock = new Mock<DbSet<Category>>();
-        
-        contextMock.Setup(c => c.Categories).Returns(dbSetMock.Object);
-        
-        var handler = new CreateCategoryCommandHandler(contextMock.Object);
+        var currentUserMock = new Mock<ICurrentUserService>();
         var companyId = Guid.NewGuid();
-        var command = new CreateCategoryCommand("Laptops", companyId);
+
+        contextMock.Setup(c => c.Categories).Returns(dbSetMock.Object);
+        currentUserMock.Setup(u => u.CompanyId).Returns(companyId);
+
+        var handler = new CreateCategoryCommandHandler(contextMock.Object, currentUserMock.Object);
+        var command = new CreateCategoryCommand("Laptops");
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);

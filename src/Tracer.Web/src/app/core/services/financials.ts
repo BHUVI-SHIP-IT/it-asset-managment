@@ -4,12 +4,10 @@ import { Observable } from 'rxjs';
 
 export interface DepreciationDto {
   id: string;
-  assetId: string;
-  assetName: string;
-  purchaseCost: number;
-  currentValue: number;
-  monthsElapsed: number;
-  calculatedAt: string;
+  name: string;
+  months: number;
+  minimumValue: number;
+  companyId: string;
 }
 
 export interface ReportExportDto {
@@ -28,12 +26,10 @@ export class FinancialsService {
   private http = inject(HttpClient);
   private apiUrl = '/api/v1';
 
-  // Depreciation
   getDepreciationSchedules(): Observable<DepreciationDto[]> {
     return this.http.get<DepreciationDto[]>(`${this.apiUrl}/depreciation`);
   }
 
-  // Reports
   getReports(): Observable<ReportExportDto[]> {
     return this.http.get<ReportExportDto[]>(`${this.apiUrl}/reports`);
   }

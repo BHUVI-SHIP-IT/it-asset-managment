@@ -37,4 +37,24 @@ public sealed class Component : AuditableEntity<int>
 
         return new Component(name.Trim(), companyId, totalQuantity, purchaseCost);
     }
+
+    public void Update(string name, int totalQuantity, decimal purchaseCost)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+        if (totalQuantity < 0)
+            throw new ArgumentException("Quantity cannot be negative.", nameof(totalQuantity));
+        if (purchaseCost < 0)
+            throw new ArgumentException("Purchase cost cannot be negative.", nameof(purchaseCost));
+
+        Name = name.Trim();
+        TotalQuantity = totalQuantity;
+        PurchaseCost = purchaseCost;
+    }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
+    }
 }

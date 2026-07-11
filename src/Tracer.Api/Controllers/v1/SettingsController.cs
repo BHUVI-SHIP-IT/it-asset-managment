@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tracer.Shared.Authorization;
 using Tracer.Application.Features.Settings.Commands;
 using Tracer.Application.Features.Settings.Queries;
 
@@ -11,7 +12,7 @@ namespace Tracer.Api.Controllers.v1;
 /// used to enable/configure notification channels (e.g. Slack webhook URL, SMTP host).
 /// </summary>
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/settings")]
 [Produces("application/json")]
 [Authorize]
 public sealed class SettingsController : ControllerBase
@@ -22,7 +23,7 @@ public sealed class SettingsController : ControllerBase
 
     /// <summary>Gets all tenant settings for the current company.</summary>
     [HttpGet]
-    [Authorize(Policy = "Settings.View")]
+    [Authorize(Policy = Permissions.Settings.View)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
@@ -32,7 +33,7 @@ public sealed class SettingsController : ControllerBase
 
     /// <summary>Creates or updates a setting by key (upsert). Returns the setting ID.</summary>
     [HttpPut("{key}")]
-    [Authorize(Policy = "Settings.Manage")]
+    [Authorize(Policy = Permissions.Settings.Manage)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Upsert(string key, [FromBody] UpsertSettingRequest body, CancellationToken cancellationToken)
@@ -46,7 +47,7 @@ public sealed class SettingsController : ControllerBase
 
     /// <summary>Deletes a setting by key (soft-delete). Returns 404 when the key does not exist.</summary>
     [HttpDelete("{key}")]
-    [Authorize(Policy = "Settings.Manage")]
+    [Authorize(Policy = Permissions.Settings.Manage)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(string key, CancellationToken cancellationToken)

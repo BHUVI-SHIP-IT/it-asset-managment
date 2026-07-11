@@ -56,4 +56,33 @@ public sealed class SoftwareLicense : AuditableEntity<Guid>
         // Raise domain event if needed
         return license;
     }
+
+    public void Update(
+        string name,
+        Guid? manufacturerId,
+        int totalSeats,
+        decimal purchaseCost,
+        DateTime? expirationDate,
+        string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("License name is required.", nameof(name));
+        if (totalSeats < 1)
+            throw new ArgumentException("Total seats must be at least 1.", nameof(totalSeats));
+        if (purchaseCost < 0)
+            throw new ArgumentException("Purchase cost cannot be negative.", nameof(purchaseCost));
+
+        Name = name.Trim();
+        ManufacturerId = manufacturerId;
+        TotalSeats = totalSeats;
+        PurchaseCost = purchaseCost;
+        ExpirationDate = expirationDate;
+        Notes = notes?.Trim();
+    }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
+    }
 }

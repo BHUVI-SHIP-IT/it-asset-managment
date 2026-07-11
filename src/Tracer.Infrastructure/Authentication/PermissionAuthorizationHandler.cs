@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using Tracer.Shared.Authorization;
+using AuthRoles = Tracer.Shared.Authorization.Roles;
 
 namespace Tracer.Infrastructure.Authentication;
 
@@ -11,11 +13,15 @@ public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionReq
             return Task.CompletedTask;
         }
 
-        // Check if user has the specific permission
+        if (context.User.IsInRole(AuthRoles.SuperAdmin))
+        {
+            context.Succeed(requirement);
+            return Task.CompletedTask;
+        }
+
         var permissions = context.User.FindAll("permissions").Select(c => c.Value);
-        
-        // SuperAdmin gets a free pass or we check exact matches
-        if (permissions.Contains(requirement.Permission) || context.User.HasClaim("role", "SuperAdmin"))
+
+        if (PermissionChecker.Satisfies(permissions, requirement.Permission))
         {
             context.Succeed(requirement);
         }

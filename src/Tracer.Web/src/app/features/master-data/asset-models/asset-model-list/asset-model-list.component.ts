@@ -1,3 +1,4 @@
+import { Permissions } from '../../../../core/auth/permissions';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -34,6 +35,8 @@ import { AssetModelFormDialogComponent } from '../asset-model-form-dialog/asset-
   styleUrls: ['./asset-model-list.component.scss']
 })
 export class AssetModelListComponent extends BaseTableComponent<AssetModel> implements OnInit {
+  readonly permissions = Permissions;
+
   private assetModelService = inject(AssetModelService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);

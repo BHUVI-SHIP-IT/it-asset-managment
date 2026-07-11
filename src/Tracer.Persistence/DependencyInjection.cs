@@ -18,9 +18,9 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Register interceptors as scoped so they can resolve ICurrentUserService.
-        services.AddScoped<AuditableEntityInterceptor>();
-        services.AddScoped<OutboxInterceptor>();
+        // Interceptors must be singleton — AddDbContextPool resolves from the root provider.
+        services.AddSingleton<AuditableEntityInterceptor>();
+        services.AddSingleton<OutboxInterceptor>();
 
         services.AddDbContextPool<TracerDbContext>((sp, options) =>
         {

@@ -1,3 +1,4 @@
+import { Permissions } from '../../../../core/auth/permissions';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -34,6 +35,8 @@ import { CategoryFormDialogComponent } from '../category-form-dialog/category-fo
   styleUrls: ['./category-list.component.scss']
 })
 export class CategoryListComponent extends BaseTableComponent<Category> implements OnInit {
+  readonly permissions = Permissions;
+
   private categoryService = inject(CategoryService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
@@ -78,13 +81,15 @@ export class CategoryListComponent extends BaseTableComponent<Category> implemen
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.categoryService.updateCategory(category.id, result).subscribe({
+        // Route id must be in the body — UpdateCategoryCommand requires Id.
+        this.categoryService.updateCategory(category.id, { ...result, id: category.id }).subscribe({
           next: () => {
             this.snackBar.open('Category updated successfully', 'Close', { duration: 3000 });
             this.loadData();
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to update category'}`, 'Close', { duration: 5000 });
+            const detail = err?.error?.detail || err?.error?.title || err?.message || 'Failed to update category';
+            this.snackBar.open(`Error: ${detail}`, 'Close', { duration: 5000 });
           }
         });
       }

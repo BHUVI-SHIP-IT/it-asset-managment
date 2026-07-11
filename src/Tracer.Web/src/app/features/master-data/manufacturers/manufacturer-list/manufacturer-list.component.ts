@@ -1,3 +1,4 @@
+import { Permissions } from '../../../../core/auth/permissions';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -34,6 +35,8 @@ import { ManufacturerFormDialogComponent } from '../manufacturer-form-dialog/man
   styleUrls: ['./manufacturer-list.component.scss']
 })
 export class ManufacturerListComponent extends BaseTableComponent<Manufacturer> implements OnInit {
+  readonly permissions = Permissions;
+
   private manufacturerService = inject(ManufacturerService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);

@@ -1,3 +1,4 @@
+import { Permissions } from '../../../core/auth/permissions';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -34,6 +35,8 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
   styleUrls: ['./asset-detail.component.scss']
 })
 export class AssetDetailComponent implements OnInit {
+  readonly permissions = Permissions;
+
   private route = inject(ActivatedRoute);
   private assetService = inject(AssetService);
   private snackBar = inject(MatSnackBar);
@@ -42,8 +45,10 @@ export class AssetDetailComponent implements OnInit {
   asset = signal<AssetDetailDto | null>(null);
   history = signal<AssetHistoryDto[]>([]);
   loading = signal<boolean>(true);
+  historyLoading = signal<boolean>(false);
+  historyError = signal<string | null>(null);
 
-  displayedHistoryColumns: string[] = ['validFrom', 'validTo', 'name', 'assignedUserId', 'statusLabelId'];
+  displayedHistoryColumns: string[] = ['validFrom', 'validTo', 'name', 'status', 'assignedUserId'];
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -57,9 +62,10 @@ export class AssetDetailComponent implements OnInit {
     this.assetService.getAsset(id).subscribe({
       next: (data) => {
         this.asset.set(data);
+        this.loading.set(false);
         this.loadHistory(id);
       },
-      error: (err) => {
+      error: () => {
         this.snackBar.open('Error loading asset', 'Close', { duration: 5000 });
         this.loading.set(false);
       }
@@ -67,21 +73,48 @@ export class AssetDetailComponent implements OnInit {
   }
 
   loadHistory(id: string): void {
+    this.historyLoading.set(true);
+    this.historyError.set(null);
     this.assetService.getAssetHistory(id).subscribe({
       next: (data) => {
-        this.history.set(data);
-        this.loading.set(false);
+        this.history.set(Array.isArray(data) ? data : []);
+        this.historyLoading.set(false);
       },
       error: (err) => {
-        this.snackBar.open('Error loading asset history', 'Close', { duration: 5000 });
-        this.loading.set(false);
+        // Asset missing → 404; treat other failures as soft errors so the detail page still works.
+        this.history.set([]);
+        this.historyError.set(err?.error?.detail || 'Could not load asset history.');
+        this.historyLoading.set(false);
       }
     });
+  }
+
+  /** Matches domain: Deployed + AssignedUserId (Asset.Checkin invariant). */
+  isCheckedOut(asset: AssetDetailDto | null = this.asset()): boolean {
+    if (!asset) return false;
+    return asset.status === 'Deployed' && !!asset.assignedUserId;
+  }
+
+  /** Matches domain: Deployable and unassigned (Asset.Checkout invariant). */
+  canCheckOut(asset: AssetDetailDto | null = this.asset()): boolean {
+    if (!asset) return false;
+    return asset.status === 'Deployable' && !asset.assignedUserId;
   }
 
   openCheckoutDialog(): void {
     const currentAsset = this.asset();
     if (!currentAsset) return;
+
+    if (!this.canCheckOut(currentAsset)) {
+      this.snackBar.open(
+        this.isCheckedOut(currentAsset)
+          ? 'This asset is already checked out. Check it in first.'
+          : 'This asset cannot be checked out in its current status.',
+        'Close',
+        { duration: 5000 }
+      );
+      return;
+    }
 
     const dialogRef = this.dialog.open(AssetCheckoutDialogComponent, {
       width: '400px',
@@ -96,7 +129,7 @@ export class AssetDetailComponent implements OnInit {
             this.loadAsset(currentAsset.id);
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to checkout asset'}`, 'Close', { duration: 5000 });
+            this.snackBar.open(`Error: ${this.apiErrorDetail(err) || 'Failed to checkout asset'}`, 'Close', { duration: 5000 });
           }
         });
       }
@@ -107,6 +140,11 @@ export class AssetDetailComponent implements OnInit {
     const currentAsset = this.asset();
     if (!currentAsset) return;
 
+    if (!this.isCheckedOut(currentAsset)) {
+      this.snackBar.open('This asset is not currently assigned.', 'Close', { duration: 5000 });
+      return;
+    }
+
     const dialogRef = this.dialog.open(AssetCheckinDialogComponent, {
       width: '400px',
       data: { assetId: currentAsset.id, assetName: currentAsset.name }
@@ -114,16 +152,28 @@ export class AssetDetailComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        this.assetService.checkinAsset(currentAsset.id, { assetId: currentAsset.id }).subscribe({
+        // Re-read in case the signal changed while the dialog was open.
+        const latest = this.asset();
+        if (!latest || !this.isCheckedOut(latest)) {
+          this.snackBar.open('This asset is not currently assigned.', 'Close', { duration: 5000 });
+          return;
+        }
+
+        this.assetService.checkinAsset(latest.id, { assetId: latest.id }).subscribe({
           next: () => {
             this.snackBar.open('Asset checked in successfully', 'Close', { duration: 3000 });
-            this.loadAsset(currentAsset.id);
+            this.loadAsset(latest.id);
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to checkin asset'}`, 'Close', { duration: 5000 });
+            this.snackBar.open(`Error: ${this.apiErrorDetail(err) || 'Failed to checkin asset'}`, 'Close', { duration: 5000 });
           }
         });
       }
     });
+  }
+
+  /** Prefer ProblemDetails.detail (e.g. 422 business-rule messages) over HttpErrorResponse.message. */
+  private apiErrorDetail(err: { error?: { detail?: string; title?: string }; message?: string }): string | undefined {
+    return err?.error?.detail || err?.error?.title || err?.message;
   }
 }

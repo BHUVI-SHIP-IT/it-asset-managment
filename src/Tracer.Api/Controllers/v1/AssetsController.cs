@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tracer.Shared.Authorization;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
 using Tracer.Application.Common.Interfaces;
@@ -18,7 +19,7 @@ namespace Tracer.Api.Controllers.v1;
 /// Asset lifecycle API (Doc 5 §3.1). Routes map to MediatR commands/queries via vertical slices.
 /// </summary>
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/assets")]
 [Produces("application/json")]
 [Authorize]
 public sealed class AssetsController : ControllerBase
@@ -34,7 +35,7 @@ public sealed class AssetsController : ControllerBase
 
     /// <summary>Get paginated list of assets.</summary>
     [HttpGet]
-    [Authorize(Policy = "Assets.View")]
+    [Authorize(Policy = Permissions.Assets.View)]
     [OutputCache(PolicyName = "UserScoped15s")]
     [EnableRateLimiting(RateLimitPolicies.Read)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -44,14 +45,16 @@ public sealed class AssetsController : ControllerBase
         [FromQuery] int? statusLabelId,
         [FromQuery] Guid? locationId,
         [FromQuery] int page = 1,
+        [FromQuery] int pageNumber = 0,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? sortBy = null,
         [FromQuery] bool sortDescending = false,
         CancellationToken cancellationToken = default)
     {
+        var resolvedPage = pageNumber > 0 ? pageNumber : page;
         var companyId = _currentUserService.CompanyId ?? Guid.Empty;
         var query = new GetAllAssetsQuery(
-            companyId, searchTerm, status, statusLabelId, locationId, page, pageSize, sortBy, sortDescending);
+            companyId, searchTerm, status, statusLabelId, locationId, resolvedPage, pageSize, sortBy, sortDescending);
         
         var result = await _sender.Send(query, cancellationToken);
         return Ok(result);
@@ -59,7 +62,7 @@ public sealed class AssetsController : ControllerBase
 
     /// <summary>Register a new asset (Doc 8 §2.1).</summary>
     [HttpPost]
-    [Authorize(Policy = "Assets.Create")]
+    [Authorize(Policy = Permissions.Assets.Create)]
     [EnableRateLimiting(RateLimitPolicies.Write)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -77,7 +80,7 @@ public sealed class AssetsController : ControllerBase
 
     /// <summary>Get asset by ID.</summary>
     [HttpGet("{id:guid}")]
-    [Authorize(Policy = "Assets.View")]
+    [Authorize(Policy = Permissions.Assets.View)]
     [EnableRateLimiting(RateLimitPolicies.Read)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -92,7 +95,7 @@ public sealed class AssetsController : ControllerBase
 
     /// <summary>Update asset descriptive fields.</summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = "Assets.Edit")]
+    [Authorize(Policy = Permissions.Assets.Edit)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -114,7 +117,7 @@ public sealed class AssetsController : ControllerBase
 
     /// <summary>Soft-delete an asset (Doc 4 §1.2).</summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "Assets.Delete")]
+    [Authorize(Policy = Permissions.Assets.Delete)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
@@ -129,7 +132,7 @@ public sealed class AssetsController : ControllerBase
 
     /// <summary>Check out an asset to a user (Doc 3 §4.2).</summary>
     [HttpPost("{id:guid}/checkout")]
-    [Authorize(Policy = "Assets.CheckOut")]
+    [Authorize(Policy = Permissions.Assets.CheckOut)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> Checkout(
@@ -149,7 +152,7 @@ public sealed class AssetsController : ControllerBase
 
     /// <summary>Check in an asset (return to inventory) (Doc 3 §4.2).</summary>
     [HttpPost("{id:guid}/checkin")]
-    [Authorize(Policy = "Assets.CheckIn")]
+    [Authorize(Policy = Permissions.Assets.CheckIn)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> Checkin(Guid id, CancellationToken cancellationToken)
@@ -160,5 +163,23 @@ public sealed class AssetsController : ControllerBase
             return UnprocessableEntity(new ProblemDetails { Detail = result.Error.Description });
 
         return NoContent();
-}
+    }
+
+    /// <summary>
+    /// Temporal audit history for an asset (SQL Server AssetsHistory).
+    /// Returns 200 [] when the asset exists but has no prior versions; 404 only if the asset is missing.
+    /// </summary>
+    [HttpGet("{id:guid}/history")]
+    [Authorize(Policy = Permissions.Assets.View)]
+    [EnableRateLimiting(RateLimitPolicies.Read)]
+    [ProducesResponseType(typeof(IReadOnlyList<Tracer.Application.Features.Assets.DTOs.AssetHistoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetHistory(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetAssetHistoryQuery(id), cancellationToken);
+        if (result is null)
+            return NotFound();
+
+        return Ok(result);
+    }
 }

@@ -1,5 +1,7 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Tracer.Application.Common.Exceptions;
 using Tracer.Domain.Exceptions;
 
@@ -20,13 +22,39 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var (statusCode, title, detail, errors) = exception switch
+        // Unwrap common wrappers so JsonException from model binding surfaces clearly.
+        var root = exception;
+        while (root.InnerException is not null
+               && root is not JsonException
+               && root is not ValidationException
+               && root is not NotFoundException
+               && root is not DomainException
+               && root is not DbUpdateException)
+        {
+            root = root.InnerException;
+        }
+
+        var (statusCode, title, detail, errors) = root switch
         {
             ValidationException validationEx => (
                 StatusCodes.Status400BadRequest,
                 "Validation Failed",
                 validationEx.Message,
                 validationEx.Errors as object),
+
+            JsonException jsonEx => (
+                StatusCodes.Status400BadRequest,
+                "Invalid JSON",
+                jsonEx.Path is { Length: > 0 } path
+                    ? $"Invalid JSON at '{path}': {jsonEx.Message}"
+                    : jsonEx.Message,
+                null as object),
+
+            DbUpdateException dbEx when IsUniqueConstraintViolation(dbEx) => (
+                StatusCodes.Status409Conflict,
+                "Conflict",
+                "A record with the same unique value already exists.",
+                null as object),
 
             NotFoundException notFoundEx => (
                 StatusCodes.Status404NotFound,
@@ -73,5 +101,13 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
         return true;
+    }
+
+    private static bool IsUniqueConstraintViolation(DbUpdateException exception)
+    {
+        var message = exception.InnerException?.Message ?? exception.Message;
+        return message.Contains("unique index", StringComparison.OrdinalIgnoreCase)
+               || message.Contains("UNIQUE KEY", StringComparison.OrdinalIgnoreCase)
+               || message.Contains("duplicate key", StringComparison.OrdinalIgnoreCase);
     }
 }

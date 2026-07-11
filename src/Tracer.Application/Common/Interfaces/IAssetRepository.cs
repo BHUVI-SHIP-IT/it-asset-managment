@@ -1,5 +1,6 @@
 using Tracer.Application.Common.Specifications;
 using Tracer.Domain.Aggregates.AssetAggregate;
+using Tracer.Application.Features.Assets.DTOs;
 
 namespace Tracer.Application.Common.Interfaces;
 
@@ -22,4 +23,6 @@ public interface IAssetRepository
     void Update(Asset asset);
 
     void Remove(Asset asset);
+
+    Task<IReadOnlyList<AssetHistoryDto>> GetHistoryAsync(Guid assetId, CancellationToken cancellationToken = default);
 }

@@ -60,6 +60,26 @@ services:
     volumes:
       - seq-data:/data
 
+  tracer-web:
+      build:
+        context: src/Tracer.Web
+        dockerfile: Dockerfile
+      ports:
+        - "4200:80"
+      depends_on:
+        tracer-api:
+          condition: service_healthy
+      healthcheck:
+        test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+      deploy:
+        resources:
+          limits:
+            memory: 128m
+          reservations:
+            memory: 64m
 volumes:
   sql-data:
   redis-data:

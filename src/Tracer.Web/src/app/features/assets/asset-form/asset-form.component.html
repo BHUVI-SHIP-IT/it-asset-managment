@@ -35,14 +35,24 @@
         </div>
 
         <div class="form-row">
-
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Asset Model</mat-label>
+            <mat-select formControlName="assetModelId">
+              @for (model of assetModels(); track model.id) {
+                <mat-option [value]="model.id">{{ model.name }}</mat-option>
+              }
+            </mat-select>
+            @if (form.get('assetModelId')?.hasError('required')) {
+              <mat-error>Asset model is required</mat-error>
+            }
+          </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Status</mat-label>
             <mat-select formControlName="statusLabelId">
-              <mat-option value="unoccupied">Unoccupied</mat-option>
-              <mat-option value="occupied">Occupied</mat-option>
-              <mat-option value="requested">Requested</mat-option>
+              @for (label of statusLabels(); track label.id) {
+                <mat-option [value]="label.id">{{ label.name }}</mat-option>
+              }
             </mat-select>
             @if (form.get('statusLabelId')?.hasError('required')) {
               <mat-error>Status is required</mat-error>
@@ -55,9 +65,9 @@
             <mat-label>Location</mat-label>
             <mat-select formControlName="locationId">
               <mat-option [value]="null">-- None --</mat-option>
-              <mat-option value="headquarters">Headquarters</mat-option>
-              <mat-option value="branch-office">Branch Office</mat-option>
-              <mat-option value="remote">Remote</mat-option>
+              @for (location of locations(); track location.id) {
+                <mat-option [value]="location.id">{{ location.name }}</mat-option>
+              }
             </mat-select>
           </mat-form-field>
 

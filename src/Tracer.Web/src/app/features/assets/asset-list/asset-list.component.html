@@ -3,7 +3,7 @@
     <h1>Assets</h1>
     <div class="actions-bar">
       <button mat-raised-button color="primary" 
-              *hasPermission="'Assets.Create'"
+              *hasPermission="permissions.Assets.Create"
               routerLink="/assets/new">
         <mat-icon>add</mat-icon>
         New Asset
@@ -93,10 +93,10 @@
           <button mat-icon-button color="primary" [routerLink]="['/assets', row.id]" matTooltip="View Details">
             <mat-icon>visibility</mat-icon>
           </button>
-          <button mat-icon-button color="primary" *hasPermission="'Assets.Edit'" [routerLink]="['/assets', row.id, 'edit']" matTooltip="Edit">
+          <button mat-icon-button color="primary" *hasPermission="permissions.Assets.Edit" [routerLink]="['/assets', row.id, 'edit']" matTooltip="Edit">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="warn" *hasPermission="'Assets.Delete'" (click)="deleteAsset(row)" matTooltip="Delete">
+          <button mat-icon-button color="warn" *hasPermission="permissions.Assets.Delete" (click)="deleteAsset(row)" matTooltip="Delete">
             <mat-icon>delete</mat-icon>
           </button>
         </td>

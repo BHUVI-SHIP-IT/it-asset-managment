@@ -7,6 +7,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
 import { NotificationService, NotificationDto } from './notification.service';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { Permissions } from '../auth/permissions';
 
 @Component({
   selector: 'app-alerts',
@@ -26,6 +27,8 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
 })
 export class AlertsComponent implements OnInit {
   private notificationService = inject(NotificationService);
+
+  readonly notificationsView = Permissions.Notifications.View;
 
   notifications = signal<NotificationDto[]>([]);
   unreadCount = signal<number>(0);

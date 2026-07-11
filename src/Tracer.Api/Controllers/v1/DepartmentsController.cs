@@ -1,14 +1,15 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tracer.Shared.Authorization;
 using Tracer.Application.Features.Departments.Commands;
 using Tracer.Application.Features.Departments.Queries;
 
 namespace Tracer.Api.Controllers.v1;
 
 [ApiController]
-[Route("api/v1/[controller]")]
-[Authorize(Policy = "Departments.View")]
+[Route("api/v1/departments")]
+[Authorize(Policy = Permissions.Departments.View)]
 public class DepartmentsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -19,10 +20,21 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
         var result = await _mediator.Send(new GetAllDepartmentsQuery());
-        return Ok(result);
+        var page = pageNumber < 1 ? 1 : pageNumber;
+        var size = pageSize < 1 ? 10 : pageSize;
+        var items = result.Skip((page - 1) * size).Take(size).ToList();
+        return Ok(new
+        {
+            items,
+            totalCount = result.Count,
+            pageNumber = page,
+            pageSize = size
+        });
     }
 
     [HttpGet("{id}")]
@@ -33,7 +45,7 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "Departments.Create")]
+    [Authorize(Policy = Permissions.Departments.Create)]
     public async Task<IActionResult> Create(CreateDepartmentCommand command)
     {
         var id = await _mediator.Send(command);
@@ -41,7 +53,7 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Policy = "Departments.Update")]
+    [Authorize(Policy = Permissions.Departments.Update)]
     public async Task<IActionResult> Update(Guid id, UpdateDepartmentCommand command)
     {
         if (id != command.Id) return BadRequest();
@@ -50,7 +62,7 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = "Departments.Delete")]
+    [Authorize(Policy = Permissions.Departments.Delete)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var success = await _mediator.Send(new DeleteDepartmentCommand(id));

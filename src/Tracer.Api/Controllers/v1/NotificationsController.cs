@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tracer.Shared.Authorization;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
 using Tracer.Application.Features.Notifications.Commands;
@@ -13,7 +14,7 @@ namespace Tracer.Api.Controllers.v1;
 /// notification feed and allows marking notifications as read or deleting them.
 /// </summary>
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/notifications")]
 [Produces("application/json")]
 [Authorize]
 public sealed class NotificationsController : ControllerBase
@@ -27,7 +28,7 @@ public sealed class NotificationsController : ControllerBase
     /// <param name="pageSize">Items per page, max 200 (default: 50).</param>
     /// <param name="unreadOnly">When true, only returns unread notifications.</param>
     [HttpGet]
-    [Authorize(Policy = "Notifications.View")]
+    [Authorize(Policy = Permissions.Notifications.View)]
     [OutputCache(PolicyName = "UserScoped30s")]
     [EnableRateLimiting("ReadPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -43,7 +44,7 @@ public sealed class NotificationsController : ControllerBase
 
     /// <summary>Gets a single notification by ID.</summary>
     [HttpGet("{id:guid}")]
-    [Authorize(Policy = "Notifications.View")]
+    [Authorize(Policy = Permissions.Notifications.View)]
     [EnableRateLimiting("ReadPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -56,7 +57,7 @@ public sealed class NotificationsController : ControllerBase
 
     /// <summary>Marks a notification as read.</summary>
     [HttpPost("{id:guid}/read")]
-    [Authorize(Policy = "Notifications.View")]
+    [Authorize(Policy = Permissions.Notifications.View)]
     [EnableRateLimiting("WritePolicy")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -69,7 +70,7 @@ public sealed class NotificationsController : ControllerBase
 
     /// <summary>Soft-deletes a notification (Doc 4 §1.2).</summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "Notifications.Delete")]
+    [Authorize(Policy = Permissions.Notifications.Delete)]
     [EnableRateLimiting("WritePolicy")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

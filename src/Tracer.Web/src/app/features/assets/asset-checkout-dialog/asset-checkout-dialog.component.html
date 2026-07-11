@@ -4,10 +4,14 @@
   <p>Assign this asset to a user.</p>
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="dialog-form" style="margin-top: 16px;">
     <mat-form-field appearance="outline" style="width: 100%;">
-      <mat-label>User ID (GUID)</mat-label>
-      <input matInput formControlName="userId" placeholder="e.g., 123e4567-e89b-12d3-a456-426614174000">
+      <mat-label>User</mat-label>
+      <mat-select formControlName="userId">
+        @for (user of users(); track user.id) {
+          <mat-option [value]="user.id">{{ user.fullName }} ({{ user.email }})</mat-option>
+        }
+      </mat-select>
       @if (form.get('userId')?.hasError('required')) {
-        <mat-error>User ID is required</mat-error>
+        <mat-error>User is required</mat-error>
       }
     </mat-form-field>
   </form>

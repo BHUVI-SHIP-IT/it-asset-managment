@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Tracer.Application\Tracer.Application.csproj" />
     <ProjectReference Include="..\Tracer.Infrastructure\Tracer.Infrastructure.csproj" />
     <ProjectReference Include="..\Tracer.Persistence\Tracer.Persistence.csproj" />
+    <ProjectReference Include="..\Tracer.Shared\Tracer.Shared.csproj" />
   </ItemGroup>
 
 </Project>

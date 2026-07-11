@@ -1,3 +1,4 @@
+import { Permissions } from '../../../core/auth/permissions';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
@@ -45,6 +46,8 @@ import { AssetDto, AssetService } from '../asset.service';
   styleUrls: ['./asset-list.component.scss']
 })
 export class AssetListComponent extends BaseTableComponent<AssetDto> implements OnInit {
+  readonly permissions = Permissions;
+
   private assetService = inject(AssetService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);

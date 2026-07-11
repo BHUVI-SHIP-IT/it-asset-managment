@@ -889,7 +889,7 @@ namespace Tracer.Persistence.Migrations
                             Email = "admin@tracer.io",
                             FullName = "System Administrator",
                             IsActive = true,
-                            PasswordHash = "$2a$11$N9V2V2W41q4.F854hV5/Z.tJjU.n/q.4mO1h3Z/g71.p3z7g91/m6",
+                            PasswordHash = "$2a$11$AeZacdZCy9zUfbQyUnd3fuVX.rG9K1Cslyg8YK5Z6tBIPiTG5V6pe",
                             RoleId = 1
                         });
                 });
@@ -1313,56 +1313,368 @@ namespace Tracer.Persistence.Migrations
                         new
                         {
                             Id = 20,
+                            Description = "Allows Settings.View",
+                            Name = "Settings.View"
+                        },
+                        new
+                        {
+                            Id = 21,
                             Description = "Allows Settings.Manage",
                             Name = "Settings.Manage"
                         },
                         new
                         {
-                            Id = 21,
+                            Id = 22,
                             Description = "Allows API.Manage",
                             Name = "API.Manage"
                         },
                         new
                         {
-                            Id = 22,
+                            Id = 23,
+                            Description = "Allows Notifications.View",
+                            Name = "Notifications.View"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Description = "Allows Notifications.Delete",
+                            Name = "Notifications.Delete"
+                        },
+                        new
+                        {
+                            Id = 25,
                             Description = "Allows Notifications.Manage",
                             Name = "Notifications.Manage"
                         },
                         new
                         {
-                            Id = 23,
+                            Id = 26,
                             Description = "Allows Maintenance.Manage",
                             Name = "Maintenance.Manage"
                         },
                         new
                         {
-                            Id = 24,
+                            Id = 27,
                             Description = "Allows AuditLogs.View",
                             Name = "AuditLogs.View"
                         },
                         new
                         {
-                            Id = 25,
+                            Id = 28,
+                            Description = "Allows Categories.View",
+                            Name = "Categories.View"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Description = "Allows Categories.Create",
+                            Name = "Categories.Create"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Description = "Allows Categories.Update",
+                            Name = "Categories.Update"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Description = "Allows Categories.Delete",
+                            Name = "Categories.Delete"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Description = "Allows Locations.View",
+                            Name = "Locations.View"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Description = "Allows Locations.Create",
+                            Name = "Locations.Create"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Description = "Allows Locations.Update",
+                            Name = "Locations.Update"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Description = "Allows Locations.Delete",
+                            Name = "Locations.Delete"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Description = "Allows Departments.View",
+                            Name = "Departments.View"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Description = "Allows Departments.Create",
+                            Name = "Departments.Create"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Description = "Allows Departments.Update",
+                            Name = "Departments.Update"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Description = "Allows Departments.Delete",
+                            Name = "Departments.Delete"
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Description = "Allows Manufacturers.View",
+                            Name = "Manufacturers.View"
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Description = "Allows Manufacturers.Create",
+                            Name = "Manufacturers.Create"
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Description = "Allows Manufacturers.Update",
+                            Name = "Manufacturers.Update"
+                        },
+                        new
+                        {
+                            Id = 43,
+                            Description = "Allows Manufacturers.Delete",
+                            Name = "Manufacturers.Delete"
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Description = "Allows Suppliers.View",
+                            Name = "Suppliers.View"
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Description = "Allows Suppliers.Create",
+                            Name = "Suppliers.Create"
+                        },
+                        new
+                        {
+                            Id = 46,
+                            Description = "Allows Suppliers.Update",
+                            Name = "Suppliers.Update"
+                        },
+                        new
+                        {
+                            Id = 47,
+                            Description = "Allows Suppliers.Delete",
+                            Name = "Suppliers.Delete"
+                        },
+                        new
+                        {
+                            Id = 48,
+                            Description = "Allows StatusLabels.View",
+                            Name = "StatusLabels.View"
+                        },
+                        new
+                        {
+                            Id = 49,
+                            Description = "Allows StatusLabels.Create",
+                            Name = "StatusLabels.Create"
+                        },
+                        new
+                        {
+                            Id = 50,
+                            Description = "Allows StatusLabels.Update",
+                            Name = "StatusLabels.Update"
+                        },
+                        new
+                        {
+                            Id = 51,
+                            Description = "Allows StatusLabels.Delete",
+                            Name = "StatusLabels.Delete"
+                        },
+                        new
+                        {
+                            Id = 52,
+                            Description = "Allows AssetModels.View",
+                            Name = "AssetModels.View"
+                        },
+                        new
+                        {
+                            Id = 53,
+                            Description = "Allows AssetModels.Create",
+                            Name = "AssetModels.Create"
+                        },
+                        new
+                        {
+                            Id = 54,
+                            Description = "Allows AssetModels.Update",
+                            Name = "AssetModels.Update"
+                        },
+                        new
+                        {
+                            Id = 55,
+                            Description = "Allows AssetModels.Delete",
+                            Name = "AssetModels.Delete"
+                        },
+                        new
+                        {
+                            Id = 56,
+                            Description = "Allows CustomFields.View",
+                            Name = "CustomFields.View"
+                        },
+                        new
+                        {
+                            Id = 57,
+                            Description = "Allows CustomFields.Manage",
+                            Name = "CustomFields.Manage"
+                        },
+                        new
+                        {
+                            Id = 58,
+                            Description = "Allows Consumables.View",
+                            Name = "Consumables.View"
+                        },
+                        new
+                        {
+                            Id = 59,
+                            Description = "Allows Consumables.Create",
+                            Name = "Consumables.Create"
+                        },
+                        new
+                        {
+                            Id = 60,
+                            Description = "Allows Consumables.Update",
+                            Name = "Consumables.Update"
+                        },
+                        new
+                        {
+                            Id = 61,
+                            Description = "Allows Consumables.Delete",
+                            Name = "Consumables.Delete"
+                        },
+                        new
+                        {
+                            Id = 62,
+                            Description = "Allows Consumables.Checkout",
+                            Name = "Consumables.Checkout"
+                        },
+                        new
+                        {
+                            Id = 63,
+                            Description = "Allows Consumables.Manage",
+                            Name = "Consumables.Manage"
+                        },
+                        new
+                        {
+                            Id = 64,
+                            Description = "Allows Licenses.View",
+                            Name = "Licenses.View"
+                        },
+                        new
+                        {
+                            Id = 65,
+                            Description = "Allows Licenses.Create",
+                            Name = "Licenses.Create"
+                        },
+                        new
+                        {
+                            Id = 66,
+                            Description = "Allows Licenses.Update",
+                            Name = "Licenses.Update"
+                        },
+                        new
+                        {
+                            Id = 67,
+                            Description = "Allows Licenses.Delete",
+                            Name = "Licenses.Delete"
+                        },
+                        new
+                        {
+                            Id = 68,
                             Description = "Allows Licenses.Manage",
                             Name = "Licenses.Manage"
                         },
                         new
                         {
-                            Id = 26,
+                            Id = 69,
+                            Description = "Allows Accessories.View",
+                            Name = "Accessories.View"
+                        },
+                        new
+                        {
+                            Id = 70,
+                            Description = "Allows Accessories.Create",
+                            Name = "Accessories.Create"
+                        },
+                        new
+                        {
+                            Id = 71,
+                            Description = "Allows Accessories.Update",
+                            Name = "Accessories.Update"
+                        },
+                        new
+                        {
+                            Id = 72,
+                            Description = "Allows Accessories.Delete",
+                            Name = "Accessories.Delete"
+                        },
+                        new
+                        {
+                            Id = 73,
                             Description = "Allows Accessories.Manage",
                             Name = "Accessories.Manage"
                         },
                         new
                         {
-                            Id = 27,
+                            Id = 74,
+                            Description = "Allows Components.View",
+                            Name = "Components.View"
+                        },
+                        new
+                        {
+                            Id = 75,
+                            Description = "Allows Components.Create",
+                            Name = "Components.Create"
+                        },
+                        new
+                        {
+                            Id = 76,
+                            Description = "Allows Components.Update",
+                            Name = "Components.Update"
+                        },
+                        new
+                        {
+                            Id = 77,
+                            Description = "Allows Components.Delete",
+                            Name = "Components.Delete"
+                        },
+                        new
+                        {
+                            Id = 78,
                             Description = "Allows Components.Manage",
                             Name = "Components.Manage"
                         },
                         new
                         {
-                            Id = 28,
-                            Description = "Allows Consumables.Manage",
-                            Name = "Consumables.Manage"
+                            Id = 79,
+                            Description = "Allows Depreciation.View",
+                            Name = "Depreciation.View"
+                        },
+                        new
+                        {
+                            Id = 80,
+                            Description = "Allows Depreciation.Create",
+                            Name = "Depreciation.Create"
                         });
                 });
 
@@ -1655,6 +1967,266 @@ namespace Tracer.Persistence.Migrations
                         },
                         new
                         {
+                            RoleId = 1,
+                            PermissionId = 29
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 30
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 31
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 32
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 33
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 34
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 35
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 36
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 37
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 38
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 39
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 40
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 41
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 42
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 43
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 44
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 45
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 46
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 47
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 48
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 49
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 50
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 51
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 52
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 53
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 54
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 55
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 56
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 57
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 58
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 59
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 60
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 61
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 62
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 63
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 64
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 65
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 66
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 67
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 68
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 69
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 70
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 71
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 72
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 73
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 74
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 75
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 76
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 77
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 78
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 79
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 80
+                        },
+                        new
+                        {
                             RoleId = 10,
                             PermissionId = 1
                         },
@@ -1671,7 +2243,7 @@ namespace Tracer.Persistence.Migrations
                         new
                         {
                             RoleId = 10,
-                            PermissionId = 23
+                            PermissionId = 26
                         },
                         new
                         {
@@ -1702,6 +2274,26 @@ namespace Tracer.Persistence.Migrations
                         {
                             RoleId = 5,
                             PermissionId = 7
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 63
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 78
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 73
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 68
                         });
                 });
 

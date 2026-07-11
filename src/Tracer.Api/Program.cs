@@ -47,7 +47,15 @@ try
     builder.Services.AddValidatorsFromAssembly(typeof(ValidationBehavior<,>).Assembly);
 
     // ── Controllers ──
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(opts =>
+        {
+            opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            opts.JsonSerializerOptions.Converters.Add(
+                new System.Text.Json.Serialization.JsonStringEnumConverter(
+                    System.Text.Json.JsonNamingPolicy.CamelCase,
+                    allowIntegerValues: true));
+        });
 
     // ── Swagger/OpenAPI (Dev only) ──
     builder.Services.AddEndpointsApiExplorer();
@@ -311,6 +319,18 @@ try
     });
 
     Log.Information("Starting Tracer API (M7 Hardened — high-concurrency optimized)...");
+
+    // Dev-only: ensure asset-form lookup dropdowns have sample master data.
+    // (EF migrations are not applied on startup per Doc 11.)
+    if (app.Environment.IsDevelopment())
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<Tracer.Persistence.Contexts.TracerDbContext>();
+        await Tracer.Persistence.Seed.MasterDataSeedData.EnsureSeededAsync(db);
+        await Tracer.Persistence.Seed.UserSeedData.EnsureSeededAsync(db);
+        Log.Information("Development master-data and sample users ensured.");
+    }
+
     app.Run();
 }
 catch (Exception ex)

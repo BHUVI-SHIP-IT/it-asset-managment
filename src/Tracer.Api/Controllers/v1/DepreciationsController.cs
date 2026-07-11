@@ -2,11 +2,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tracer.Application.Features.Depreciations.Commands.CreateDepreciation;
+using Tracer.Application.Features.Depreciations.Queries.GetAllDepreciations;
+using Tracer.Shared.Authorization;
 
 namespace Tracer.Api.Controllers.v1;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/depreciation")]
 [Authorize]
 public class DepreciationsController : ControllerBase
 {
@@ -17,7 +19,15 @@ public class DepreciationsController : ControllerBase
         _mediator = mediator;
     }
 
+    [HttpGet]
+    [Authorize(Policy = Permissions.Depreciation.View)]
+    public async Task<ActionResult<List<DepreciationListItemDto>>> GetAll(CancellationToken cancellationToken)
+    {
+        return Ok(await _mediator.Send(new GetAllDepreciationsQuery(), cancellationToken));
+    }
+
     [HttpPost]
+    [Authorize(Policy = Permissions.Depreciation.Create)]
     public async Task<IActionResult> Create([FromBody] CreateDepreciationCommand command)
     {
         var result = await _mediator.Send(command);

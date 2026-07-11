@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../auth/auth.service';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { AlertsComponent } from '../notifications/alerts.component';
+import { NAV_ITEMS } from './nav-items';
 
 @Component({
   selector: 'app-layout',
@@ -28,6 +29,7 @@ import { AlertsComponent } from '../notifications/alerts.component';
 })
 export class LayoutComponent {
   authService = inject(AuthService);
+  navItems = NAV_ITEMS;
 
   logout() {
     this.authService.logout();

@@ -1,3 +1,4 @@
+import { Permissions } from '../../../../core/auth/permissions';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -34,6 +35,8 @@ import { LocationFormDialogComponent } from '../location-form-dialog/location-fo
   styleUrls: ['./location-list.component.scss']
 })
 export class LocationListComponent extends BaseTableComponent<Location> implements OnInit {
+  readonly permissions = Permissions;
+
   private locationService = inject(LocationService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);

@@ -1,7 +1,7 @@
 <div class="table-container mat-elevation-z8">
   <div class="table-header">
     <h2>Components</h2>
-    <button mat-raised-button color="primary" (click)="openCreateDialog()" *hasPermission="'Components.Create'">
+    <button mat-raised-button color="primary" (click)="openCreateDialog()" *hasPermission="permissions.Components.Create">
       <mat-icon>add</mat-icon>
       Create Component
     </button>
@@ -30,10 +30,10 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef> Actions </th>
       <td mat-cell *matCellDef="let row">
-        <button mat-icon-button color="primary" (click)="openEditDialog(row)" *hasPermission="'Components.Edit'" matTooltip="Edit">
+        <button mat-icon-button color="primary" (click)="openEditDialog(row)" *hasPermission="permissions.Components.Update" matTooltip="Edit">
           <mat-icon>edit</mat-icon>
         </button>
-        <button mat-icon-button color="warn" (click)="deleteComponentItem(row)" *hasPermission="'Components.Delete'" matTooltip="Delete">
+        <button mat-icon-button color="warn" (click)="deleteComponentItem(row)" *hasPermission="permissions.Components.Delete" matTooltip="Delete">
           <mat-icon>delete</mat-icon>
         </button>
       </td>

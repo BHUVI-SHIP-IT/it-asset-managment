@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Tracer.Application.Common.Interfaces;
+using Tracer.Application.Features.Users.DTOs;
 using Tracer.Domain.Entities;
 using Tracer.Persistence.Contexts;
 
@@ -41,6 +42,31 @@ public sealed class UserRepository : IUserRepository
                 .ThenInclude(r => r.RolePermissions)
                     .ThenInclude(rp => rp.Permission)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<UserDto>> ListByCompanyAsync(Guid companyId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .Include(u => u.Role)
+            .Where(u => u.CompanyId == companyId)
+            .OrderBy(u => u.FullName)
+            .Select(u => new UserDto
+            {
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email,
+                IsActive = u.IsActive,
+                RoleId = u.RoleId,
+                RoleName = u.Role.Name,
+                CompanyId = u.CompanyId
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task AddAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    {
+        await _context.Users.AddAsync(user, cancellationToken);
     }
 
     public void Update(ApplicationUser user)

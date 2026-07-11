@@ -1,6 +1,7 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Tracer.Application.Common.Interfaces;
 using Tracer.Domain.Common;
 
 namespace Tracer.Persistence.Interceptors;
@@ -11,11 +12,11 @@ namespace Tracer.Persistence.Interceptors;
 /// </summary>
 public sealed class AuditableEntityInterceptor : SaveChangesInterceptor
 {
-    private readonly ICurrentUserService _currentUser;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AuditableEntityInterceptor(ICurrentUserService currentUser)
+    public AuditableEntityInterceptor(IHttpContextAccessor httpContextAccessor)
     {
-        _currentUser = currentUser;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
@@ -27,7 +28,9 @@ public sealed class AuditableEntityInterceptor : SaveChangesInterceptor
             return base.SavingChangesAsync(eventData, result, cancellationToken);
 
         var utcNow = DateTime.UtcNow;
-        var userId = _currentUser.UserId;
+        var sub = _httpContextAccessor.HttpContext?.User
+            .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = Guid.TryParse(sub, out var id) ? id : (Guid?)null;
 
         foreach (var entry in eventData.Context.ChangeTracker.Entries<AuditableEntity<Guid>>())
         {
