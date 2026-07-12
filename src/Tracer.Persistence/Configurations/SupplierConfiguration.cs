@@ -14,6 +14,7 @@ public sealed class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
         builder.Property(s => s.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
 
         builder.Property(s => s.Name).HasMaxLength(255).IsRequired();
+        builder.Property(s => s.RowVersion).IsRowVersion();
 
         builder.HasQueryFilter(s => !s.IsDeleted);
 

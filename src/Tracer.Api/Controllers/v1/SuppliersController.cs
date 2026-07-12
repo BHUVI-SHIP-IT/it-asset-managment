@@ -49,7 +49,7 @@ public class SuppliersController : ControllerBase
     public async Task<IActionResult> Create(CreateSupplierCommand command)
     {
         var id = await _mediator.Send(command);
-        return CreatedAtAction(nameof(GetById), new { id }, new { id });
+        return CreatedAtAction(nameof(GetById), new { id }, id);
     }
 
     [HttpPut("{id}")]

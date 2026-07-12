@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 export interface CustomFieldDto {
   id: string;
   name: string;
-  fieldType: 'Text' | 'Number' | 'Date' | 'Boolean' | 'Dropdown';
+  fieldType: 'text' | 'number' | 'date' | 'boolean' | 'dropdown';
   isRequired: boolean;
   options?: string; // Comma separated for dropdowns
 }

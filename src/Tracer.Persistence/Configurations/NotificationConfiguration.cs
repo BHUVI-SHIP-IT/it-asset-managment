@@ -45,6 +45,11 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
         // Notification-center query: newest-first per tenant, filterable by delivery status.
         builder.HasIndex(n => new { n.CompanyId, n.Status });
 
+        builder.HasOne<Domain.Entities.Company>()
+            .WithMany()
+            .HasForeignKey(n => n.CompanyId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasQueryFilter(n => !n.IsDeleted);
     }
 }

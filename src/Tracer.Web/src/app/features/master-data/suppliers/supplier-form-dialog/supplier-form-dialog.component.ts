@@ -32,12 +32,9 @@ export class SupplierFormDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: SupplierDialogData
   ) {
     this.isEditMode = !!data.supplier;
-    
+
     this.form = this.fb.group({
-      name: [data.supplier?.name || '', [Validators.required, Validators.maxLength(100)]],
-      contactName: [data.supplier?.contactName || '', [Validators.maxLength(100)]],
-      phone: [data.supplier?.phone || '', [Validators.maxLength(50)]],
-      email: [data.supplier?.email || '', [Validators.maxLength(100), Validators.email]]
+      name: [data.supplier?.name || '', [Validators.required, Validators.maxLength(100)]]
     });
   }
 

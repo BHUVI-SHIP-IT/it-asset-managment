@@ -57,7 +57,13 @@ public sealed class AssetsController : ControllerBase
             companyId, searchTerm, status, statusLabelId, locationId, resolvedPage, pageSize, sortBy, sortDescending);
         
         var result = await _sender.Send(query, cancellationToken);
-        return Ok(result);
+        return Ok(new
+        {
+            items = result.Items,
+            totalCount = result.TotalCount,
+            pageNumber = result.Page,
+            pageSize = result.PageSize
+        });
     }
 
     /// <summary>Register a new asset (Doc 8 §2.1).</summary>

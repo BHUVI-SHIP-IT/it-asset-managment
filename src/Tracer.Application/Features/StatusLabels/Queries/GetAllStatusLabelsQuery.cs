@@ -15,7 +15,14 @@ public class GetAllStatusLabelsQueryHandler : IRequestHandler<GetAllStatusLabels
     public async Task<List<StatusLabelDto>> Handle(GetAllStatusLabelsQuery request, CancellationToken cancellationToken)
     {
         return await _context.StatusLabels
-            .Select(x => new StatusLabelDto { Id = x.Id, Name = x.Name })
+            .Select(x => new StatusLabelDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                IsDeployable = x.IsDeployable,
+                IsPending = x.IsPending,
+                IsArchived = x.IsArchived
+            })
             .ToListAsync(cancellationToken);
     }
 }

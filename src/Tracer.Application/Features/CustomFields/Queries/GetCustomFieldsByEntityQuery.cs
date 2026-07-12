@@ -26,7 +26,7 @@ public class GetCustomFieldsByEntityQueryHandler : IRequestHandler<GetCustomFiel
                 Id = v.Id,
                 CustomFieldId = v.CustomFieldId,
                 FieldName = v.CustomField!.Name,
-                FieldType = v.CustomField!.FieldType.ToString(),
+                FieldType = v.CustomField!.FieldType.ToString().ToLowerInvariant(),
                 EntityId = v.EntityId,
                 Value = v.Value
             })

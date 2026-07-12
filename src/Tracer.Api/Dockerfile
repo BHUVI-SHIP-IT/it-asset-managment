@@ -23,7 +23,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS final
 WORKDIR /app
 EXPOSE 8080
 
-RUN apk add --no-cache icu-libs
+RUN apk add --no-cache icu-libs wget
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 

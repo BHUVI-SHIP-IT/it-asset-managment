@@ -4,7 +4,11 @@ using Tracer.Domain.Entities;
 
 namespace Tracer.Application.Features.StatusLabels.Commands;
 
-public record CreateStatusLabelCommand(string Name) : IRequest<int>;
+public record CreateStatusLabelCommand(
+    string Name,
+    bool IsDeployable = false,
+    bool IsPending = false,
+    bool IsArchived = false) : IRequest<int>;
 
 public class CreateStatusLabelCommandHandler : IRequestHandler<CreateStatusLabelCommand, int>
 {
@@ -15,13 +19,15 @@ public class CreateStatusLabelCommandHandler : IRequestHandler<CreateStatusLabel
     {
         var entity = new StatusLabel(0)
         {
-            Name = request.Name
-            
+            Name = request.Name.Trim(),
+            IsDeployable = request.IsDeployable,
+            IsPending = request.IsPending,
+            IsArchived = request.IsArchived
         };
-        
+
         _context.StatusLabels.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
-        
+
         return entity.Id;
     }
 }

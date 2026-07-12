@@ -14,6 +14,7 @@ public sealed class DepartmentConfiguration : IEntityTypeConfiguration<Departmen
         builder.Property(d => d.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
 
         builder.Property(d => d.Name).HasMaxLength(255).IsRequired();
+        builder.Property(d => d.RowVersion).IsRowVersion();
 
         builder.HasQueryFilter(d => !d.IsDeleted);
 

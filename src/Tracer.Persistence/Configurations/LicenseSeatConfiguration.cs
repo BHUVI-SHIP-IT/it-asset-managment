@@ -20,5 +20,15 @@ public sealed class LicenseSeatConfiguration : IEntityTypeConfiguration<LicenseS
             .WithMany()
             .HasForeignKey(s => s.SoftwareLicenseId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne<Domain.Entities.ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(s => s.AssignedUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne<Domain.Aggregates.AssetAggregate.Asset>()
+            .WithMany()
+            .HasForeignKey(s => s.AssignedAssetId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

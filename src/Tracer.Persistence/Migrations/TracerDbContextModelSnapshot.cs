@@ -61,9 +61,6 @@ namespace Tracer.Persistence.Migrations
                     b.Property<Guid?>("DepreciationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("DepreciationId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -128,8 +125,6 @@ namespace Tracer.Persistence.Migrations
                         .HasDatabaseName("IX_Assets_AssignedUserId");
 
                     b.HasIndex("DepreciationId");
-
-                    b.HasIndex("DepreciationId1");
 
                     b.HasIndex("LocationId");
 
@@ -211,7 +206,8 @@ namespace Tracer.Persistence.Migrations
 
                     b.HasIndex("CompanyId", "Name")
                         .IsUnique()
-                        .HasDatabaseName("UX_CustomFields_CompanyId_Name");
+                        .HasDatabaseName("UX_CustomFields_CompanyId_Name")
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("CustomFields", (string)null);
                 });
@@ -298,8 +294,10 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -310,7 +308,8 @@ namespace Tracer.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId", "Name")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("Depreciations", (string)null);
                 });
@@ -598,6 +597,10 @@ namespace Tracer.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssignedAssetId");
+
+                    b.HasIndex("AssignedUserId");
+
                     b.HasIndex("SoftwareLicenseId");
 
                     b.ToTable("LicenseSeats", (string)null);
@@ -679,6 +682,8 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ManufacturerId");
 
                     b.HasIndex("CompanyId", "Name")
                         .IsUnique()
@@ -823,7 +828,8 @@ namespace Tracer.Persistence.Migrations
 
                     b.HasIndex("CompanyId", "Key")
                         .IsUnique()
-                        .HasDatabaseName("UX_TenantSettings_CompanyId_Key");
+                        .HasDatabaseName("UX_TenantSettings_CompanyId_Key")
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("TenantSettings", (string)null);
                 });
@@ -928,8 +934,10 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -980,8 +988,10 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -1056,8 +1066,10 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -1104,8 +1116,10 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -1152,8 +1166,10 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -1708,6 +1724,10 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("RequestedBy");
 
                     b.ToTable("ReportExports", (string)null);
                 });
@@ -2332,8 +2352,10 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -2435,8 +2457,10 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -2508,14 +2532,10 @@ namespace Tracer.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Tracer.Domain.Aggregates.DepreciationAggregate.Depreciation", null)
+                    b.HasOne("Tracer.Domain.Aggregates.DepreciationAggregate.Depreciation", "Depreciation")
                         .WithMany()
                         .HasForeignKey("DepreciationId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Tracer.Domain.Aggregates.DepreciationAggregate.Depreciation", "Depreciation")
-                        .WithMany()
-                        .HasForeignKey("DepreciationId1");
 
                     b.HasOne("Tracer.Domain.Entities.Location", null)
                         .WithMany()
@@ -2531,6 +2551,15 @@ namespace Tracer.Persistence.Migrations
                     b.Navigation("Depreciation");
                 });
 
+            modelBuilder.Entity("Tracer.Domain.Aggregates.CustomFieldAggregate.CustomField", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Tracer.Domain.Aggregates.CustomFieldAggregate.CustomFieldValue", b =>
                 {
                     b.HasOne("Tracer.Domain.Aggregates.CustomFieldAggregate.CustomField", "CustomField")
@@ -2542,12 +2571,89 @@ namespace Tracer.Persistence.Migrations
                     b.Navigation("CustomField");
                 });
 
+            modelBuilder.Entity("Tracer.Domain.Aggregates.DepreciationAggregate.Depreciation", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Tracer.Domain.Aggregates.InventoryAggregate.Accessory", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Tracer.Domain.Aggregates.InventoryAggregate.Component", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Tracer.Domain.Aggregates.InventoryAggregate.Consumable", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Tracer.Domain.Aggregates.LicenseAggregate.LicenseSeat", b =>
                 {
+                    b.HasOne("Tracer.Domain.Aggregates.AssetAggregate.Asset", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedAssetId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Tracer.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Tracer.Domain.Aggregates.LicenseAggregate.SoftwareLicense", null)
                         .WithMany()
                         .HasForeignKey("SoftwareLicenseId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Tracer.Domain.Aggregates.LicenseAggregate.SoftwareLicense", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Tracer.Domain.Entities.Manufacturer", null)
+                        .WithMany()
+                        .HasForeignKey("ManufacturerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Tracer.Domain.Aggregates.NotificationAggregate.Notification", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Tracer.Domain.Aggregates.SettingAggregate.TenantSetting", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -2639,6 +2745,21 @@ namespace Tracer.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("Tracer.Domain.Entities.ReportExport", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Tracer.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("RequestedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tracer.Domain.Entities.RolePermission", b =>

@@ -1,0 +1,192 @@
+### Tracer API — smoke tests (VS Code REST Client / JetBrains HTTP Client)
+### Prerequisites: API running on http://localhost:5001 (see docker-compose / launchSettings)
+### Seed: admin@tracer.io / Admin123!
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### ========== Auth ==========
+
+# @name login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@tracer.io",
+  "password": "Admin123!"
+}
+
+###
+@token = {{login.response.body.accessToken}}
+
+### ========== Dashboard ==========
+
+GET {{baseUrl}}/api/v1/dashboard/metrics
+Authorization: Bearer {{token}}
+
+### ========== Categories (CRUD) ==========
+
+# @name createCategory
+POST {{baseUrl}}/api/v1/categories
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Smoke Test Category"
+}
+
+###
+@categoryId = {{createCategory.response.body}}
+
+GET {{baseUrl}}/api/v1/categories?pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+PUT {{baseUrl}}/api/v1/categories/{{categoryId}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "id": "{{categoryId}}",
+  "name": "Smoke Test Category Updated"
+}
+
+### ========== Locations ==========
+
+# @name createLocation
+POST {{baseUrl}}/api/v1/locations
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Smoke Test Location"
+}
+
+###
+@locationId = {{createLocation.response.body}}
+
+### ========== Status labels ==========
+
+# @name createStatusLabel
+POST {{baseUrl}}/api/v1/status-labels
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Smoke Label",
+  "isDeployable": true,
+  "isPending": false,
+  "isArchived": false
+}
+
+###
+@statusLabelId = {{createStatusLabel.response.body}}
+
+GET {{baseUrl}}/api/v1/status-labels?pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### ========== Asset models (requires existing manufacturer + category) ==========
+
+GET {{baseUrl}}/api/v1/asset-models?pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+# @name createAssetModel
+POST {{baseUrl}}/api/v1/asset-models
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Smoke Model"
+}
+
+###
+@assetModelId = {{createAssetModel.response.body}}
+
+### ========== Assets (create → checkout → checkin) ==========
+
+GET {{baseUrl}}/api/v1/assets?pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+# @name createAsset
+POST {{baseUrl}}/api/v1/assets
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "assetTag": "SMOKE-001",
+  "name": "Smoke Test Laptop",
+  "assetModelId": "{{assetModelId}}",
+  "statusLabelId": 1,
+  "purchaseCost": 1000,
+  "locationId": "{{locationId}}"
+}
+
+###
+@assetId = {{createAsset.response.body}}
+
+GET {{baseUrl}}/api/v1/assets/{{assetId}}
+Authorization: Bearer {{token}}
+
+### Users (for checkout)
+
+# @name listUsers
+GET {{baseUrl}}/api/v1/users?pageNumber=1&pageSize=1
+Authorization: Bearer {{token}}
+
+###
+@userId = {{listUsers.response.body.items.0.id}}
+
+### Checkout (asset must be Deployable)
+POST {{baseUrl}}/api/v1/assets/{{assetId}}/checkout
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "assetId": "{{assetId}}",
+  "userId": "{{userId}}"
+}
+
+### Checkin
+POST {{baseUrl}}/api/v1/assets/{{assetId}}/checkin
+Authorization: Bearer {{token}}
+
+### History
+GET {{baseUrl}}/api/v1/assets/{{assetId}}/history
+Authorization: Bearer {{token}}
+
+### ========== Custom fields ==========
+
+# @name createCustomField
+POST {{baseUrl}}/api/v1/custom-fields
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Smoke Field",
+  "fieldType": "text",
+  "isRequired": false
+}
+
+###
+@customFieldId = {{createCustomField.response.body}}
+
+GET {{baseUrl}}/api/v1/custom-fields
+Authorization: Bearer {{token}}
+
+### ========== Notifications ==========
+
+GET {{baseUrl}}/api/v1/notifications?page=1&pageSize=20&unreadOnly=false
+Authorization: Bearer {{token}}
+
+### ========== Cleanup (optional) ==========
+
+DELETE {{baseUrl}}/api/v1/assets/{{assetId}}
+Authorization: Bearer {{token}}
+
+DELETE {{baseUrl}}/api/v1/categories/{{categoryId}}
+Authorization: Bearer {{token}}
+
+DELETE {{baseUrl}}/api/v1/locations/{{locationId}}
+Authorization: Bearer {{token}}
+
+DELETE {{baseUrl}}/api/v1/custom-fields/{{customFieldId}}
+Authorization: Bearer {{token}}

@@ -12,33 +12,6 @@
         <mat-error>Name cannot exceed 100 characters</mat-error>
       }
     </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Contact Name</mat-label>
-      <input matInput formControlName="contactName">
-      @if (form.get('contactName')?.hasError('maxlength')) {
-        <mat-error>Contact name cannot exceed 100 characters</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Phone</mat-label>
-      <input matInput formControlName="phone">
-      @if (form.get('phone')?.hasError('maxlength')) {
-        <mat-error>Phone cannot exceed 50 characters</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Email</mat-label>
-      <input matInput formControlName="email">
-      @if (form.get('email')?.hasError('maxlength')) {
-        <mat-error>Email cannot exceed 100 characters</mat-error>
-      }
-      @if (form.get('email')?.hasError('email')) {
-        <mat-error>Must be a valid email</mat-error>
-      }
-    </mat-form-field>
   </form>
 </mat-dialog-content>
 

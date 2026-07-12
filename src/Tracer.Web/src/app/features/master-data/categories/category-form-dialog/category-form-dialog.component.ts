@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { Category } from '../category.service';
 
 export interface CategoryDialogData {
@@ -19,16 +18,13 @@ export interface CategoryDialogData {
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule
+    MatInputModule
   ],
   templateUrl: './category-form-dialog.component.html'
 })
 export class CategoryFormDialogComponent {
   form: FormGroup;
   isEditMode: boolean;
-  
-  categoryTypes = ['Asset', 'Component', 'Consumable', 'License'];
 
   constructor(
     private fb: FormBuilder,
@@ -36,11 +32,9 @@ export class CategoryFormDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: CategoryDialogData
   ) {
     this.isEditMode = !!data.category;
-    
+
     this.form = this.fb.group({
-      name: [data.category?.name || '', [Validators.required, Validators.maxLength(50)]],
-      description: [data.category?.description || '', [Validators.maxLength(200)]],
-      categoryType: [data.category?.categoryType || '', [Validators.required]]
+      name: [data.category?.name || '', [Validators.required, Validators.maxLength(50)]]
     });
   }
 

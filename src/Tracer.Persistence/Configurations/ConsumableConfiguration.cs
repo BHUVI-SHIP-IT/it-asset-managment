@@ -21,5 +21,10 @@ public sealed class ConsumableConfiguration : IEntityTypeConfiguration<Consumabl
             .IsUnique()
             .HasDatabaseName("UX_Consumables_CompanyId_Name")
             .HasFilter("[IsDeleted] = 0");
+
+        builder.HasOne<Domain.Entities.Company>()
+            .WithMany()
+            .HasForeignKey(c => c.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

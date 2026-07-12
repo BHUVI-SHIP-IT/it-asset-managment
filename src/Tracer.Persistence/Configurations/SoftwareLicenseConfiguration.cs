@@ -22,5 +22,15 @@ public sealed class SoftwareLicenseConfiguration : IEntityTypeConfiguration<Soft
             .IsUnique()
             .HasDatabaseName("UX_SoftwareLicenses_CompanyId_Name")
             .HasFilter("[IsDeleted] = 0");
+
+        builder.HasOne<Domain.Entities.Company>()
+            .WithMany()
+            .HasForeignKey(l => l.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<Domain.Entities.Manufacturer>()
+            .WithMany()
+            .HasForeignKey(l => l.ManufacturerId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

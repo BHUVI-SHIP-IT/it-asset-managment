@@ -14,6 +14,7 @@ public sealed class AssetModelConfiguration : IEntityTypeConfiguration<AssetMode
         builder.Property(a => a.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
 
         builder.Property(a => a.Name).HasMaxLength(255).IsRequired();
+        builder.Property(a => a.RowVersion).IsRowVersion();
 
         builder.HasQueryFilter(a => !a.IsDeleted);
 

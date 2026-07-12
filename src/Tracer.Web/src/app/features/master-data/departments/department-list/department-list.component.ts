@@ -80,7 +80,7 @@ export class DepartmentListComponent extends BaseTableComponent<Department> impl
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.departmentService.updateDepartment(department.id, result).subscribe({
+        this.departmentService.updateDepartment(department.id, { ...result, id: department.id }).subscribe({
           next: () => {
             this.snackBar.open('Department updated successfully', 'Close', { duration: 3000 });
             this.loadData();

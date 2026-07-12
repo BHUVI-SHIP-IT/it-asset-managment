@@ -21,8 +21,4 @@ export class SettingsService {
   upsertSetting(key: string, value: string | null): Observable<string> {
     return this.http.put<string>(`${this.apiUrl}/${encodeURIComponent(key)}`, { value });
   }
-
-  deleteSetting(key: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${encodeURIComponent(key)}`);
-  }
 }

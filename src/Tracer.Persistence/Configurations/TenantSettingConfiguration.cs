@@ -26,7 +26,13 @@ public sealed class TenantSettingConfiguration : IEntityTypeConfiguration<Tenant
         // One value per key per tenant.
         builder.HasIndex(s => new { s.CompanyId, s.Key })
             .IsUnique()
-            .HasDatabaseName("UX_TenantSettings_CompanyId_Key");
+            .HasDatabaseName("UX_TenantSettings_CompanyId_Key")
+            .HasFilter("[IsDeleted] = 0");
+
+        builder.HasOne<Domain.Entities.Company>()
+            .WithMany()
+            .HasForeignKey(s => s.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasQueryFilter(s => !s.IsDeleted);
     }

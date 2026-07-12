@@ -12,41 +12,6 @@
         <mat-error>Name cannot exceed 100 characters</mat-error>
       }
     </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Website URL</mat-label>
-      <input matInput formControlName="url">
-      @if (form.get('url')?.hasError('maxlength')) {
-        <mat-error>URL cannot exceed 250 characters</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Support URL</mat-label>
-      <input matInput formControlName="supportUrl">
-      @if (form.get('supportUrl')?.hasError('maxlength')) {
-        <mat-error>Support URL cannot exceed 250 characters</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Support Phone</mat-label>
-      <input matInput formControlName="supportPhone">
-      @if (form.get('supportPhone')?.hasError('maxlength')) {
-        <mat-error>Phone cannot exceed 50 characters</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Support Email</mat-label>
-      <input matInput formControlName="supportEmail">
-      @if (form.get('supportEmail')?.hasError('maxlength')) {
-        <mat-error>Email cannot exceed 100 characters</mat-error>
-      }
-      @if (form.get('supportEmail')?.hasError('email')) {
-        <mat-error>Must be a valid email</mat-error>
-      }
-    </mat-form-field>
   </form>
 </mat-dialog-content>
 

@@ -33,15 +33,14 @@ export class InventoryService {
     return this.http.get<ConsumableDto[]>(`${this.apiUrl}/consumables`);
   }
 
-  getConsumable(id: number): Observable<ConsumableDto> {
-    return this.http.get<ConsumableDto>(`${this.apiUrl}/consumables/${id}`);
-  }
-
-  createConsumable(data: any): Observable<number> {
+  createConsumable(data: { name: string; totalQuantity: number; purchaseCost: number }): Observable<number> {
     return this.http.post<number>(`${this.apiUrl}/consumables`, data);
   }
 
-  checkoutConsumable(id: number, checkoutData: any): Observable<void> {
+  checkoutConsumable(
+    id: number,
+    checkoutData: { consumableId: number; assignedToUserId: string; quantity: number }
+  ): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/consumables/${id}/checkout`, checkoutData);
   }
 
@@ -54,7 +53,7 @@ export class InventoryService {
     return this.http.get<LicenseDto>(`${this.apiUrl}/licenses/${id}`);
   }
 
-  createLicense(data: any): Observable<string> {
+  createLicense(data: Partial<LicenseDto>): Observable<string> {
     return this.http.post<string>(`${this.apiUrl}/licenses`, data);
   }
 }

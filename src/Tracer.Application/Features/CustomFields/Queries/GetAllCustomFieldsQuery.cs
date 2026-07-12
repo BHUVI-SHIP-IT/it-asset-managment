@@ -37,7 +37,7 @@ public class GetAllCustomFieldsQueryHandler : IRequestHandler<GetAllCustomFields
                 Id = f.Id,
                 CompanyId = f.CompanyId,
                 Name = f.Name,
-                FieldType = f.FieldType.ToString(),
+                FieldType = f.FieldType.ToString().ToLowerInvariant(),
                 IsRequired = f.IsRequired,
                 Options = f.Options,
                 CreatedAtUtc = f.CreatedAtUtc,

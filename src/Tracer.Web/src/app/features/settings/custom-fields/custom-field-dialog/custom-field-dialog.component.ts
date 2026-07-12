@@ -28,7 +28,13 @@ export class CustomFieldDialogComponent implements OnInit {
   form: FormGroup;
   isEditMode: boolean;
 
-  fieldTypes = ['Text', 'Number', 'Date', 'Boolean', 'Dropdown'];
+  fieldTypes = [
+    { value: 'text', label: 'Text' },
+    { value: 'number', label: 'Number' },
+    { value: 'date', label: 'Date' },
+    { value: 'boolean', label: 'Boolean' },
+    { value: 'dropdown', label: 'Dropdown' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -36,10 +42,10 @@ export class CustomFieldDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: CustomFieldDto | null
   ) {
     this.isEditMode = !!data;
-    
+
     this.form = this.fb.group({
       name: ['', [Validators.required]],
-      fieldType: ['Text', [Validators.required]],
+      fieldType: ['text', [Validators.required]],
       isRequired: [false],
       options: ['']
     });
@@ -58,7 +64,7 @@ export class CustomFieldDialogComponent implements OnInit {
     // Toggle options validation based on field type
     this.form.get('fieldType')?.valueChanges.subscribe(val => {
       const optionsCtrl = this.form.get('options');
-      if (val === 'Dropdown') {
+      if (val === 'dropdown') {
         optionsCtrl?.setValidators([Validators.required]);
       } else {
         optionsCtrl?.clearValidators();

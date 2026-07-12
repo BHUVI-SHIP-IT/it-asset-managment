@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { StatusLabel } from '../status-label.service';
 
 export interface StatusLabelDialogData {
@@ -20,15 +20,13 @@ export interface StatusLabelDialogData {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule
+    MatCheckboxModule
   ],
   templateUrl: './status-label-form-dialog.component.html'
 })
 export class StatusLabelFormDialogComponent {
   form: FormGroup;
   isEditMode: boolean;
-  
-  statusTypes = ['Deployable', 'Pending', 'Undeployable', 'Archived'];
 
   constructor(
     private fb: FormBuilder,
@@ -36,11 +34,12 @@ export class StatusLabelFormDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: StatusLabelDialogData
   ) {
     this.isEditMode = !!data.statusLabel;
-    
+
     this.form = this.fb.group({
       name: [data.statusLabel?.name || '', [Validators.required, Validators.maxLength(50)]],
-      statusType: [data.statusLabel?.statusType || '', [Validators.required]],
-      colorHex: [data.statusLabel?.colorHex || '#000000', [Validators.maxLength(7)]]
+      isDeployable: [data.statusLabel?.isDeployable ?? false],
+      isPending: [data.statusLabel?.isPending ?? false],
+      isArchived: [data.statusLabel?.isArchived ?? false]
     });
   }
 

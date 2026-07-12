@@ -30,5 +30,15 @@ public sealed class ReportExportConfiguration : IEntityTypeConfiguration<ReportE
 
         builder.Property(r => r.FileContent)
             .HasColumnType("varbinary(max)");
+
+        builder.HasOne<Company>()
+            .WithMany()
+            .HasForeignKey(r => r.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(r => r.RequestedBy)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

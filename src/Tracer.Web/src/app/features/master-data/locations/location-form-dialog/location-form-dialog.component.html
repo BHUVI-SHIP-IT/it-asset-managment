@@ -12,30 +12,6 @@
         <mat-error>Name cannot exceed 100 characters</mat-error>
       }
     </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Address</mat-label>
-      <input matInput formControlName="address">
-      @if (form.get('address')?.hasError('maxlength')) {
-        <mat-error>Address cannot exceed 200 characters</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>City</mat-label>
-      <input matInput formControlName="city">
-      @if (form.get('city')?.hasError('maxlength')) {
-        <mat-error>City cannot exceed 100 characters</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Country</mat-label>
-      <input matInput formControlName="country">
-      @if (form.get('country')?.hasError('maxlength')) {
-        <mat-error>Country cannot exceed 100 characters</mat-error>
-      }
-    </mat-form-field>
   </form>
 </mat-dialog-content>
 

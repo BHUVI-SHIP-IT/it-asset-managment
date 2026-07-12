@@ -26,9 +26,18 @@ public sealed class DepreciationConfiguration : IEntityTypeConfiguration<Depreci
             .HasColumnType("decimal(18,2)")
             .IsRequired();
 
-        // Enforce uniqueness of Depreciation Name per Tenant (CompanyId)
-        builder.HasIndex(d => new { d.CompanyId, d.Name }).IsUnique();
-        
+        builder.Property(d => d.RowVersion).IsRowVersion();
+
+        // Enforce uniqueness of Depreciation Name per Tenant (CompanyId), ignoring soft-deleted rows
+        builder.HasIndex(d => new { d.CompanyId, d.Name })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        builder.HasOne<Domain.Entities.Company>()
+            .WithMany()
+            .HasForeignKey(d => d.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Soft-delete query filter
         builder.HasQueryFilter(d => !d.IsDeleted);
     }

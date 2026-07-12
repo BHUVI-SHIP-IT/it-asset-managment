@@ -16,6 +16,13 @@ public class GetStatusLabelByIdQueryHandler : IRequestHandler<GetStatusLabelById
     {
         var entity = await _context.StatusLabels.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
         if (entity == null) return null;
-        return new StatusLabelDto { Id = entity.Id, Name = entity.Name };
+        return new StatusLabelDto
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            IsDeployable = entity.IsDeployable,
+            IsPending = entity.IsPending,
+            IsArchived = entity.IsArchived
+        };
     }
 }

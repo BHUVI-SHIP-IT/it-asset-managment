@@ -30,10 +30,6 @@ export class ComponentService {
     return this.http.get<PaginatedResult<ComponentItem>>(this.apiUrl, { params });
   }
 
-  getComponent(id: number): Observable<ComponentItem> {
-    return this.http.get<ComponentItem>(`${this.apiUrl}/${id}`);
-  }
-
   createComponent(component: Partial<ComponentItem>): Observable<number> {
     return this.http.post<number>(this.apiUrl, component);
   }

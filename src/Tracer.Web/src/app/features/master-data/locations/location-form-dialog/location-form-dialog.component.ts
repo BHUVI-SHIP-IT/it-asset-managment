@@ -32,12 +32,9 @@ export class LocationFormDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: LocationDialogData
   ) {
     this.isEditMode = !!data.location;
-    
+
     this.form = this.fb.group({
-      name: [data.location?.name || '', [Validators.required, Validators.maxLength(100)]],
-      address: [data.location?.address || '', [Validators.maxLength(200)]],
-      city: [data.location?.city || '', [Validators.maxLength(100)]],
-      country: [data.location?.country || '', [Validators.maxLength(100)]]
+      name: [data.location?.name || '', [Validators.required, Validators.maxLength(100)]]
     });
   }
 

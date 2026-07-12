@@ -6,27 +6,15 @@ import { PaginatedResult } from '../../../shared/components/base-table/base-tabl
 export interface Manufacturer {
   id: string;
   name: string;
-  url?: string;
-  supportUrl?: string;
-  supportPhone?: string;
-  supportEmail?: string;
 }
 
 export interface CreateManufacturerCommand {
   name: string;
-  url?: string;
-  supportUrl?: string;
-  supportPhone?: string;
-  supportEmail?: string;
 }
 
 export interface UpdateManufacturerCommand {
   id: string;
   name: string;
-  url?: string;
-  supportUrl?: string;
-  supportPhone?: string;
-  supportEmail?: string;
 }
 
 @Injectable({

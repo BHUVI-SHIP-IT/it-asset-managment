@@ -14,6 +14,7 @@ public sealed class StatusLabelConfiguration : IEntityTypeConfiguration<StatusLa
         builder.Property(s => s.Id).ValueGeneratedOnAdd(); // Because it's INT, let it be identity or explicit if seeded
 
         builder.Property(s => s.Name).HasMaxLength(255).IsRequired();
+        builder.Property(s => s.RowVersion).IsRowVersion();
 
         builder.HasQueryFilter(s => !s.IsDeleted);
         builder.HasIndex(s => s.Name).IsUnique().HasFilter("[IsDeleted] = 0");

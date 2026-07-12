@@ -14,6 +14,7 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
 
         builder.Property(c => c.Name).HasMaxLength(255).IsRequired();
+        builder.Property(c => c.RowVersion).IsRowVersion();
 
         builder.HasQueryFilter(c => !c.IsDeleted);
 

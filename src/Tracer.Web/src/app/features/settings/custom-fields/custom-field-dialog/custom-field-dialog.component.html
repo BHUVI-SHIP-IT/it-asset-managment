@@ -14,13 +14,13 @@
     <mat-form-field appearance="outline" style="width: 100%;">
       <mat-label>Field Type</mat-label>
       <mat-select formControlName="fieldType">
-        @for (type of fieldTypes; track type) {
-          <mat-option [value]="type">{{ type }}</mat-option>
+        @for (type of fieldTypes; track type.value) {
+          <mat-option [value]="type.value">{{ type.label }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
 
-    @if (form.get('fieldType')?.value === 'Dropdown') {
+    @if (form.get('fieldType')?.value === 'dropdown') {
       <mat-form-field appearance="outline" style="width: 100%;">
         <mat-label>Options (comma separated)</mat-label>
         <input matInput formControlName="options" placeholder="e.g., Windows,Mac,Linux">

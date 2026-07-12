@@ -41,7 +41,7 @@ export class ManufacturerListComponent extends BaseTableComponent<Manufacturer> 
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  displayedColumns = ['name', 'url', 'supportEmail', 'actions'];
+  displayedColumns = ['name', 'actions'];
 
   ngOnInit(): void {
     // Initial load
@@ -81,7 +81,7 @@ export class ManufacturerListComponent extends BaseTableComponent<Manufacturer> 
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.manufacturerService.updateManufacturer(manufacturer.id, result).subscribe({
+        this.manufacturerService.updateManufacturer(manufacturer.id, { ...result, id: manufacturer.id }).subscribe({
           next: () => {
             this.snackBar.open('Manufacturer updated successfully', 'Close', { duration: 3000 });
             this.loadData();

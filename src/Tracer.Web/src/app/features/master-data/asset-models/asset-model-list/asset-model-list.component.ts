@@ -80,7 +80,7 @@ export class AssetModelListComponent extends BaseTableComponent<AssetModel> impl
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.assetModelService.updateAssetModel(assetModel.id, result).subscribe({
+        this.assetModelService.updateAssetModel(assetModel.id, { ...result, id: assetModel.id }).subscribe({
           next: () => {
             this.snackBar.open('Asset Model updated successfully', 'Close', { duration: 3000 });
             this.loadData();

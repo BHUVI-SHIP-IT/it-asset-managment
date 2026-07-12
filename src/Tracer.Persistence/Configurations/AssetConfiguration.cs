@@ -91,7 +91,8 @@ public sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
             .HasForeignKey(a => a.AssignedUserId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne<Tracer.Domain.Aggregates.DepreciationAggregate.Depreciation>()
+        // Bind the named Depreciation navigation to DepreciationId (avoids EF inventing DepreciationId1).
+        builder.HasOne(a => a.Depreciation)
             .WithMany()
             .HasForeignKey(a => a.DepreciationId)
             .OnDelete(DeleteBehavior.SetNull);

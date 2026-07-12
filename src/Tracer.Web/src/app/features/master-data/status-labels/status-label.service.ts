@@ -4,23 +4,26 @@ import { Observable } from 'rxjs';
 import { PaginatedResult } from '../../../shared/components/base-table/base-table.component';
 
 export interface StatusLabel {
-  id: string;
+  id: number;
   name: string;
-  statusType: string;
-  colorHex?: string;
+  isDeployable: boolean;
+  isPending: boolean;
+  isArchived: boolean;
 }
 
 export interface CreateStatusLabelCommand {
   name: string;
-  statusType: string;
-  colorHex?: string;
+  isDeployable: boolean;
+  isPending: boolean;
+  isArchived: boolean;
 }
 
 export interface UpdateStatusLabelCommand {
-  id: string;
+  id: number;
   name: string;
-  statusType: string;
-  colorHex?: string;
+  isDeployable: boolean;
+  isPending: boolean;
+  isArchived: boolean;
 }
 
 @Injectable({
@@ -45,19 +48,19 @@ export class StatusLabelService {
     return this.http.get<PaginatedResult<StatusLabel>>(this.baseUrl, { params });
   }
 
-  getStatusLabel(id: string): Observable<StatusLabel> {
+  getStatusLabel(id: number): Observable<StatusLabel> {
     return this.http.get<StatusLabel>(`${this.baseUrl}/${id}`);
   }
 
-  createStatusLabel(command: CreateStatusLabelCommand): Observable<string> {
-    return this.http.post<string>(this.baseUrl, command);
+  createStatusLabel(command: CreateStatusLabelCommand): Observable<number> {
+    return this.http.post<number>(this.baseUrl, command);
   }
 
-  updateStatusLabel(id: string, command: UpdateStatusLabelCommand): Observable<void> {
+  updateStatusLabel(id: number, command: UpdateStatusLabelCommand): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/${id}`, command);
   }
 
-  deleteStatusLabel(id: string): Observable<void> {
+  deleteStatusLabel(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 }

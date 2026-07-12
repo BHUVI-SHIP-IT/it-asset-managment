@@ -6,24 +6,15 @@ import { PaginatedResult } from '../../../shared/components/base-table/base-tabl
 export interface Location {
   id: string;
   name: string;
-  address?: string;
-  city?: string;
-  country?: string;
 }
 
 export interface CreateLocationCommand {
   name: string;
-  address?: string;
-  city?: string;
-  country?: string;
 }
 
 export interface UpdateLocationCommand {
   id: string;
   name: string;
-  address?: string;
-  city?: string;
-  country?: string;
 }
 
 @Injectable({

@@ -6,21 +6,15 @@ import { PaginatedResult } from '../../../shared/components/base-table/base-tabl
 export interface Category {
   id: string;
   name: string;
-  description?: string;
-  categoryType: string;
 }
 
 export interface CreateCategoryCommand {
   name: string;
-  description?: string;
-  categoryType: string;
 }
 
 export interface UpdateCategoryCommand {
   id: string;
   name: string;
-  description?: string;
-  categoryType: string;
 }
 
 @Injectable({

@@ -61,7 +61,13 @@ export class AssetListComponent extends BaseTableComponent<AssetDto> implements 
     locationId: ['']
   });
 
-  statusOptions = ['Deployable', 'Pending', 'Undeployable', 'Archived', 'Deployed'];
+  statusOptions = [
+    { value: 'Pending', label: 'Pending' },
+    { value: 'Deployable', label: 'Deployable' },
+    { value: 'Deployed', label: 'Deployed' },
+    { value: 'Maintenance', label: 'Maintenance' },
+    { value: 'Archived', label: 'Archived' }
+  ];
   statusLabels = signal<any[]>([]);
   locations = signal<any[]>([]);
   

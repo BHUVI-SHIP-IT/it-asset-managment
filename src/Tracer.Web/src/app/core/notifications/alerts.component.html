@@ -23,8 +23,8 @@
       @for (notification of notifications(); track notification.id) {
         <div class="alert-item" [class.unread]="!notification.isRead">
           <div class="alert-content">
-            <div class="alert-type">{{ notification.type }}</div>
-            <div class="alert-message">{{ notification.message }}</div>
+            <div class="alert-type">{{ notification.title }}</div>
+            <div class="alert-message">{{ notification.body }}</div>
             <div class="alert-time">{{ notification.createdAtUtc | date:'short' }}</div>
           </div>
           @if (!notification.isRead) {

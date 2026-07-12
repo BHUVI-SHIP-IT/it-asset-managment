@@ -49,15 +49,16 @@ public class StatusLabelsController : ControllerBase
     public async Task<IActionResult> Create(CreateStatusLabelCommand command)
     {
         var id = await _mediator.Send(command);
-        return CreatedAtAction(nameof(GetById), new { id }, new { id });
+        return CreatedAtAction(nameof(GetById), new { id }, id);
     }
 
     [HttpPut("{id}")]
     [Authorize(Policy = Permissions.StatusLabels.Update)]
-    public async Task<IActionResult> Update(int id, UpdateStatusLabelCommand command)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateStatusLabelCommand command)
     {
-        if (id != command.Id) return BadRequest();
-        var success = await _mediator.Send(command);
+        if (command.Id != 0 && command.Id != id) return BadRequest();
+        var effective = command with { Id = id };
+        var success = await _mediator.Send(effective);
         return success ? NoContent() : NotFound();
     }
 

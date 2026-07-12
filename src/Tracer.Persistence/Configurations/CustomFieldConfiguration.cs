@@ -30,7 +30,13 @@ public sealed class CustomFieldConfiguration : IEntityTypeConfiguration<CustomFi
 
         builder.HasIndex(f => new { f.CompanyId, f.Name })
             .IsUnique()
-            .HasDatabaseName("UX_CustomFields_CompanyId_Name");
+            .HasDatabaseName("UX_CustomFields_CompanyId_Name")
+            .HasFilter("[IsDeleted] = 0");
+
+        builder.HasOne<Domain.Entities.Company>()
+            .WithMany()
+            .HasForeignKey(f => f.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasQueryFilter(f => !f.IsDeleted);
     }

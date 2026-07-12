@@ -41,7 +41,7 @@ export class LocationListComponent extends BaseTableComponent<Location> implemen
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  displayedColumns = ['name', 'city', 'country', 'actions'];
+  displayedColumns = ['name', 'actions'];
 
   ngOnInit(): void {
     // Initial load
@@ -81,7 +81,7 @@ export class LocationListComponent extends BaseTableComponent<Location> implemen
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.locationService.updateLocation(location.id, result).subscribe({
+        this.locationService.updateLocation(location.id, { ...result, id: location.id }).subscribe({
           next: () => {
             this.snackBar.open('Location updated successfully', 'Close', { duration: 3000 });
             this.loadData();

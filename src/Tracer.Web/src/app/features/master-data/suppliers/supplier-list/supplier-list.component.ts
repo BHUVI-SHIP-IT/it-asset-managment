@@ -41,7 +41,7 @@ export class SupplierListComponent extends BaseTableComponent<Supplier> implemen
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  displayedColumns = ['name', 'contactName', 'email', 'phone', 'actions'];
+  displayedColumns = ['name', 'actions'];
 
   ngOnInit(): void {
     // Initial load
@@ -81,7 +81,7 @@ export class SupplierListComponent extends BaseTableComponent<Supplier> implemen
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.supplierService.updateSupplier(supplier.id, result).subscribe({
+        this.supplierService.updateSupplier(supplier.id, { ...result, id: supplier.id }).subscribe({
           next: () => {
             this.snackBar.open('Supplier updated successfully', 'Close', { duration: 3000 });
             this.loadData();

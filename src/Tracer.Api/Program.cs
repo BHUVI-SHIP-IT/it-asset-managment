@@ -328,7 +328,8 @@ try
         var db = scope.ServiceProvider.GetRequiredService<Tracer.Persistence.Contexts.TracerDbContext>();
         await Tracer.Persistence.Seed.MasterDataSeedData.EnsureSeededAsync(db);
         await Tracer.Persistence.Seed.UserSeedData.EnsureSeededAsync(db);
-        Log.Information("Development master-data and sample users ensured.");
+        await Tracer.Persistence.Seed.AssetSeedData.EnsureSeededAsync(db);
+        Log.Information("Development master-data, sample users, and demo assets ensured.");
     }
 
     app.Run();

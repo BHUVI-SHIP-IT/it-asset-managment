@@ -41,7 +41,7 @@ export class CategoryListComponent extends BaseTableComponent<Category> implemen
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  displayedColumns = ['name', 'categoryType', 'description', 'actions'];
+  displayedColumns = ['name', 'actions'];
 
   ngOnInit(): void {
     // Initial load

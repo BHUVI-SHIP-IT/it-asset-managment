@@ -6,24 +6,15 @@ import { PaginatedResult } from '../../../shared/components/base-table/base-tabl
 export interface Supplier {
   id: string;
   name: string;
-  contactName?: string;
-  phone?: string;
-  email?: string;
 }
 
 export interface CreateSupplierCommand {
   name: string;
-  contactName?: string;
-  phone?: string;
-  email?: string;
 }
 
 export interface UpdateSupplierCommand {
   id: string;
   name: string;
-  contactName?: string;
-  phone?: string;
-  email?: string;
 }
 
 @Injectable({

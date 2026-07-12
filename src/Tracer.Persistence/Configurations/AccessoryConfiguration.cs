@@ -21,5 +21,10 @@ public sealed class AccessoryConfiguration : IEntityTypeConfiguration<Accessory>
             .IsUnique()
             .HasDatabaseName("UX_Accessories_CompanyId_Name")
             .HasFilter("[IsDeleted] = 0");
+
+        builder.HasOne<Domain.Entities.Company>()
+            .WithMany()
+            .HasForeignKey(a => a.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

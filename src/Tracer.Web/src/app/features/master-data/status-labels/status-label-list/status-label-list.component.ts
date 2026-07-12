@@ -41,7 +41,7 @@ export class StatusLabelListComponent extends BaseTableComponent<StatusLabel> im
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  displayedColumns = ['colorHex', 'name', 'statusType', 'actions'];
+  displayedColumns = ['name', 'isDeployable', 'isPending', 'isArchived', 'actions'];
 
   ngOnInit(): void {
     // Initial load
@@ -81,7 +81,7 @@ export class StatusLabelListComponent extends BaseTableComponent<StatusLabel> im
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.statusLabelService.updateStatusLabel(statusLabel.id, result).subscribe({
+        this.statusLabelService.updateStatusLabel(statusLabel.id, { ...result, id: statusLabel.id }).subscribe({
           next: () => {
             this.snackBar.open('Status label updated successfully', 'Close', { duration: 3000 });
             this.loadData();

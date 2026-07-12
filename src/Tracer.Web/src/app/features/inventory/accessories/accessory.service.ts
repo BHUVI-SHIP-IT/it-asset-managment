@@ -30,10 +30,6 @@ export class AccessoryService {
     return this.http.get<PaginatedResult<Accessory>>(this.apiUrl, { params });
   }
 
-  getAccessory(id: number): Observable<Accessory> {
-    return this.http.get<Accessory>(`${this.apiUrl}/${id}`);
-  }
-
   createAccessory(accessory: Partial<Accessory>): Observable<number> {
     return this.http.post<number>(this.apiUrl, accessory);
   }

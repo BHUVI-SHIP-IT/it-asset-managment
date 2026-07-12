@@ -14,6 +14,7 @@ public sealed class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
 
         builder.Property(l => l.Name).HasMaxLength(255).IsRequired();
+        builder.Property(l => l.RowVersion).IsRowVersion();
 
         builder.HasQueryFilter(l => !l.IsDeleted);
 

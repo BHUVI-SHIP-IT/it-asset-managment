@@ -4,7 +4,7 @@ using Tracer.Domain.Entities;
 
 namespace Tracer.Application.Features.Categories.Commands;
 
-public record CreateCategoryCommand(string Name, string? Description = null, string? CategoryType = null) : IRequest<Guid>;
+public record CreateCategoryCommand(string Name) : IRequest<Guid>;
 
 public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, Guid>
 {

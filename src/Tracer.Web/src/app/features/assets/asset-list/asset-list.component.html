@@ -22,8 +22,8 @@
       <mat-label>Status</mat-label>
       <mat-select formControlName="status">
         <mat-option value="">All Statuses</mat-option>
-        @for (status of statusOptions; track status) {
-          <mat-option [value]="status">{{ status }}</mat-option>
+        @for (status of statusOptions; track status.value) {
+          <mat-option [value]="status.value">{{ status.label }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
