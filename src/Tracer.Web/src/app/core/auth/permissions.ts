@@ -129,6 +129,12 @@ export const Permissions = {
     View: 'Depreciation.View',
     Create: 'Depreciation.Create',
   },
+  Requests: {
+    Create: 'Requests.Create',
+    ViewOwn: 'Requests.ViewOwn',
+    ViewAll: 'Requests.ViewAll',
+    Approve: 'Requests.Approve',
+  },
 } as const;
 
 export function getManagePermission(permission: string): string | null {

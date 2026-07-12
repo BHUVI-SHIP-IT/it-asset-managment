@@ -57,6 +57,16 @@ public sealed class UsersController : ControllerBase
         return user is null ? NotFound() : Ok(user);
     }
 
+    [HttpGet("{id:guid}/assigned-items")]
+    [Authorize(Policy = Permissions.Users.View)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAssignedItems(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetUserAssignedItemsQuery(id), cancellationToken);
+        return result is null ? NotFound() : Ok(result);
+    }
+
     [HttpPost]
     [Authorize(Policy = Permissions.Users.Create)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]

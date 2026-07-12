@@ -30,7 +30,15 @@ export const routes: Routes = [
       },
       {
         path: 'users',
-        loadComponent: () => import('./features/users/user-list/user-list.component').then(m => m.UserListComponent)
+        loadChildren: () => import('./features/users/users.routes').then(m => m.USERS_ROUTES)
+      },
+      {
+        path: 'my-items',
+        loadComponent: () => import('./features/my-items/my-items.component').then(m => m.MyItemsComponent)
+      },
+      {
+        path: 'requests',
+        loadChildren: () => import('./features/requests/requests.routes').then(m => m.REQUESTS_ROUTES)
       },
       {
         path: 'master-data',

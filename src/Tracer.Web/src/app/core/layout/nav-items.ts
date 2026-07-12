@@ -9,6 +9,9 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', route: '/dashboard', icon: 'dashboard' },
+  { label: 'My Items', route: '/my-items', icon: 'inventory' },
+  { label: 'My Requests', route: '/requests/mine', icon: 'assignment', permission: Permissions.Requests.ViewOwn },
+  { label: 'Approval Queue', route: '/requests/approvals', icon: 'rule', permission: Permissions.Requests.ViewAll },
   { label: 'Assets', route: '/assets', icon: 'devices', permission: Permissions.Assets.View },
   { label: 'Users', route: '/users', icon: 'group', permission: Permissions.Users.View },
   { label: 'Master Data', route: '/master-data', icon: 'category', permission: Permissions.Categories.View },

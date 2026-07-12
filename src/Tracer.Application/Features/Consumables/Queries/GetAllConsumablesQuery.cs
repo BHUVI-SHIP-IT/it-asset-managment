@@ -34,7 +34,10 @@ public sealed class GetAllConsumablesQueryHandler : IRequestHandler<GetAllConsum
                 Name = c.Name,
                 CompanyId = c.CompanyId,
                 TotalQuantity = c.TotalQuantity,
-                PurchaseCost = c.PurchaseCost
+                PurchaseCost = c.PurchaseCost,
+                ReorderThreshold = c.ReorderThreshold,
+                AssignedUserId = c.AssignedUserId,
+                AssignedAtUtc = c.AssignedAtUtc
             })
             .ToListAsync(cancellationToken);
     }

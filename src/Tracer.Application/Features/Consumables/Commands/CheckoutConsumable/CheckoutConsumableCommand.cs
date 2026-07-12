@@ -43,8 +43,8 @@ public sealed class CheckoutConsumableCommandHandler : IRequestHandler<CheckoutC
         if (consumable == null)
             throw new NotFoundException(nameof(Consumable), request.ConsumableId);
 
-        // Deducts stock using FIFO rules (domain invariants)
-        consumable.Checkout(request.Quantity);
+        // Persist assignee and deduct stock
+        consumable.AssignTo(request.AssignedToUserId, request.Quantity);
 
         await _context.SaveChangesAsync(cancellationToken);
 

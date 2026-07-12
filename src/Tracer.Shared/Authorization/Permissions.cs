@@ -222,6 +222,16 @@ public static class Permissions
         public static readonly string[] All = [View, Create];
     }
 
+    public static class Requests
+    {
+        public const string Create = "Requests.Create";
+        public const string ViewOwn = "Requests.ViewOwn";
+        public const string ViewAll = "Requests.ViewAll";
+        public const string Approve = "Requests.Approve";
+
+        public static readonly string[] All = [Create, ViewOwn, ViewAll, Approve];
+    }
+
     /// <summary>All permissions in stable seed order (IDs 1..N).</summary>
     public static readonly string[] All =
     [
@@ -248,6 +258,7 @@ public static class Permissions
         ..Accessories.All,
         ..Components.All,
         ..Depreciation.All,
+        ..Requests.All,
     ];
 
     /// <summary>

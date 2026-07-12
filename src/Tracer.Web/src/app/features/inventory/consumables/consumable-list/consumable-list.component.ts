@@ -4,16 +4,30 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Permissions } from '../../../../core/auth/permissions';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { InventoryService, ConsumableDto } from '../../../../core/services/inventory';
+import { ConsumableFormDialogComponent } from '../consumable-form-dialog/consumable-form-dialog.component';
 
 @Component({
   selector: 'app-consumable-list',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatDialogModule],
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    HasPermissionDirective
+  ],
   template: `
     <div class="header">
       <h2>Consumables</h2>
-      <button mat-raised-button color="primary">
+      <button mat-raised-button color="primary"
+              *hasPermission="permissions.Consumables.Create"
+              (click)="openCreateDialog()">
         <mat-icon>add</mat-icon> Create Consumable
       </button>
     </div>
@@ -39,15 +53,6 @@ import { InventoryService, ConsumableDto } from '../../../../core/services/inven
         <td mat-cell *matCellDef="let element"> {{element.purchaseCost | currency}} </td>
       </ng-container>
 
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef> Actions </th>
-        <td mat-cell *matCellDef="let element">
-          <button mat-icon-button color="primary">
-            <mat-icon>edit</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
@@ -65,19 +70,50 @@ import { InventoryService, ConsumableDto } from '../../../../core/services/inven
   `]
 })
 export class ConsumableListComponent implements OnInit {
+  readonly permissions = Permissions;
+
   private inventoryService = inject(InventoryService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   consumables: ConsumableDto[] = [];
-  displayedColumns: string[] = ['id', 'name', 'quantity', 'cost', 'actions'];
+  displayedColumns: string[] = ['id', 'name', 'quantity', 'cost'];
 
   ngOnInit() {
     this.loadConsumables();
   }
 
   loadConsumables() {
-    this.inventoryService.getConsumables().subscribe(data => {
-      this.consumables = data;
+    this.inventoryService.getConsumables().subscribe({
+      next: data => {
+        this.consumables = data;
+      },
+      error: () => {
+        this.snackBar.open('Failed to load consumables', 'Close', { duration: 5000 });
+      }
+    });
+  }
+
+  openCreateDialog(): void {
+    const dialogRef = this.dialog.open(ConsumableFormDialogComponent, {
+      width: '480px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+      this.inventoryService.createConsumable(result).subscribe({
+        next: () => {
+          this.snackBar.open('Consumable created successfully', 'Close', { duration: 3000 });
+          this.loadConsumables();
+        },
+        error: err => {
+          const detail = err?.error?.detail || err?.message || 'Failed to create consumable';
+          this.snackBar.open(`Error: ${detail}`, 'Close', { duration: 5000 });
+        }
+      });
     });
   }
 }

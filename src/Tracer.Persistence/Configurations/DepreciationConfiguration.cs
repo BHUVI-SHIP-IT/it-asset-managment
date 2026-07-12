@@ -26,6 +26,13 @@ public sealed class DepreciationConfiguration : IEntityTypeConfiguration<Depreci
             .HasColumnType("decimal(18,2)")
             .IsRequired();
 
+        builder.Property(d => d.Method)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+
+        builder.Ignore(d => d.UsefulLifeYears);
+
         builder.Property(d => d.RowVersion).IsRowVersion();
 
         // Enforce uniqueness of Depreciation Name per Tenant (CompanyId), ignoring soft-deleted rows

@@ -1,6 +1,7 @@
 import { Permissions } from '../../../core/auth/permissions';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
@@ -22,6 +23,7 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,

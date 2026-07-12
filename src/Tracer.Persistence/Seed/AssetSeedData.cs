@@ -89,11 +89,23 @@ public static class AssetSeedData
         var purchaseBase = new DateTime(2024, 3, 15, 0, 0, 0, DateTimeKind.Utc);
 
         // Create missing assets first (all start Deployable).
+        // Soft-deleted rows still occupy the tag (IgnoreQueryFilters), so revive them
+        // instead of skipping — otherwise later FirstAsync (filtered) throws.
         for (var i = 0; i < Catalog.Length; i++)
         {
             var (tag, name, cost) = Catalog[i];
-            if (await db.Assets.IgnoreQueryFilters().AnyAsync(a => a.AssetTag == tag && a.CompanyId == companyId, cancellationToken))
+            var existing = await db.Assets.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(a => a.AssetTag == tag && a.CompanyId == companyId, cancellationToken);
+
+            if (existing is not null)
+            {
+                if (existing.IsDeleted)
+                {
+                    existing.IsDeleted = false;
+                    existing.DeletedAtUtc = null;
+                }
                 continue;
+            }
 
             var asset = Asset.Create(
                 assetTag: tag,
@@ -119,7 +131,10 @@ public static class AssetSeedData
         for (var i = 0; i < checkoutCount; i++)
         {
             var tag = Catalog[i].Tag;
-            var asset = await db.Assets.FirstAsync(a => a.AssetTag == tag && a.CompanyId == companyId, cancellationToken);
+            var asset = await db.Assets.FirstOrDefaultAsync(a => a.AssetTag == tag && a.CompanyId == companyId, cancellationToken);
+            if (asset is null)
+                continue;
+
             if (asset.Status == AssetStatus.Deployable)
             {
                 asset.Checkout(AssigneeIds[i % AssigneeIds.Length]);
@@ -154,7 +169,10 @@ public static class AssetSeedData
         string notes,
         CancellationToken ct)
     {
-        var asset = await db.Assets.FirstAsync(a => a.AssetTag == tag && a.CompanyId == companyId, ct);
+        var asset = await db.Assets.FirstOrDefaultAsync(a => a.AssetTag == tag && a.CompanyId == companyId, ct);
+        if (asset is null)
+            return;
+
         if (asset.Status == AssetStatus.Deployed)
             asset.Checkin();
 
@@ -183,7 +201,10 @@ public static class AssetSeedData
         string notes,
         CancellationToken ct)
     {
-        var asset = await db.Assets.FirstAsync(a => a.AssetTag == tag && a.CompanyId == companyId, ct);
+        var asset = await db.Assets.FirstOrDefaultAsync(a => a.AssetTag == tag && a.CompanyId == companyId, ct);
+        if (asset is null)
+            return;
+
         if (asset.Status == AssetStatus.Archived)
             return;
 
@@ -207,7 +228,9 @@ public static class AssetSeedData
     private static async Task GenerateHistoryAsync(TracerDbContext db, Guid companyId, CancellationToken ct)
     {
         // Only run once: marker note on TRC-1001 after history pass.
-        var marker = await db.Assets.FirstAsync(a => a.AssetTag == "TRC-1001" && a.CompanyId == companyId, ct);
+        var marker = await db.Assets.FirstOrDefaultAsync(a => a.AssetTag == "TRC-1001" && a.CompanyId == companyId, ct);
+        if (marker is null)
+            return;
         if (marker.Notes is not null && marker.Notes.Contains("seed-history-v1", StringComparison.Ordinal))
             return;
 

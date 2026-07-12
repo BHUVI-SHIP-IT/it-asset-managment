@@ -15,6 +15,14 @@ public sealed class ConsumableConfiguration : IEntityTypeConfiguration<Consumabl
         builder.Property(c => c.PurchaseCost).HasColumnType("decimal(18,2)");
         builder.Property(c => c.RowVersion).IsRowVersion();
 
+        builder.HasIndex(c => c.AssignedUserId)
+            .HasDatabaseName("IX_Consumables_AssignedUserId");
+
+        builder.HasOne<Domain.Entities.ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(c => c.AssignedUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasQueryFilter(c => !c.IsDeleted);
 
         builder.HasIndex(c => new { c.CompanyId, c.Name })

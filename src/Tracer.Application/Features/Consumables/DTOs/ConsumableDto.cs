@@ -7,4 +7,7 @@ public sealed class ConsumableDto
     public Guid CompanyId { get; set; }
     public int TotalQuantity { get; set; }
     public decimal PurchaseCost { get; set; }
+    public int ReorderThreshold { get; set; }
+    public Guid? AssignedUserId { get; set; }
+    public DateTime? AssignedAtUtc { get; set; }
 }

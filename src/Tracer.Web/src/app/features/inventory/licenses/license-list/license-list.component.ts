@@ -4,16 +4,30 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Permissions } from '../../../../core/auth/permissions';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { InventoryService, LicenseDto } from '../../../../core/services/inventory';
+import { LicenseFormDialogComponent } from '../license-form-dialog/license-form-dialog.component';
 
 @Component({
   selector: 'app-license-list',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatDialogModule],
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    HasPermissionDirective
+  ],
   template: `
     <div class="header">
       <h2>Licenses</h2>
-      <button mat-raised-button color="primary">
+      <button mat-raised-button color="primary"
+              *hasPermission="permissions.Licenses.Create"
+              (click)="openCreateDialog()">
         <mat-icon>add</mat-icon> Create License
       </button>
     </div>
@@ -39,15 +53,6 @@ import { InventoryService, LicenseDto } from '../../../../core/services/inventor
         <td mat-cell *matCellDef="let element"> {{element.expirationDate | date}} </td>
       </ng-container>
 
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef> Actions </th>
-        <td mat-cell *matCellDef="let element">
-          <button mat-icon-button color="primary">
-            <mat-icon>edit</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
@@ -65,19 +70,50 @@ import { InventoryService, LicenseDto } from '../../../../core/services/inventor
   `]
 })
 export class LicenseListComponent implements OnInit {
+  readonly permissions = Permissions;
+
   private inventoryService = inject(InventoryService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   licenses: LicenseDto[] = [];
-  displayedColumns: string[] = ['name', 'seats', 'cost', 'expiration', 'actions'];
+  displayedColumns: string[] = ['name', 'seats', 'cost', 'expiration'];
 
   ngOnInit() {
     this.loadLicenses();
   }
 
   loadLicenses() {
-    this.inventoryService.getLicenses().subscribe(data => {
-      this.licenses = data;
+    this.inventoryService.getLicenses().subscribe({
+      next: data => {
+        this.licenses = data;
+      },
+      error: () => {
+        this.snackBar.open('Failed to load licenses', 'Close', { duration: 5000 });
+      }
+    });
+  }
+
+  openCreateDialog(): void {
+    const dialogRef = this.dialog.open(LicenseFormDialogComponent, {
+      width: '480px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+      this.inventoryService.createLicense(result).subscribe({
+        next: () => {
+          this.snackBar.open('License created successfully', 'Close', { duration: 3000 });
+          this.loadLicenses();
+        },
+        error: err => {
+          const detail = err?.error?.detail || err?.message || 'Failed to create license';
+          this.snackBar.open(`Error: ${detail}`, 'Close', { duration: 5000 });
+        }
+      });
     });
   }
 }

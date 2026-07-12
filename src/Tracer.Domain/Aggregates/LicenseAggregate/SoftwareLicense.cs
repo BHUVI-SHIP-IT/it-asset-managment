@@ -35,7 +35,17 @@ public sealed class SoftwareLicense : AuditableEntity<Guid>
     public DateTime? ExpirationDate { get; private set; }
     public string? Notes { get; private set; }
 
+        public static SoftwareLicense Create(
+        string name,
+        Guid companyId,
+        Guid? manufacturerId,
+        int totalSeats,
+        decimal purchaseCost,
+        DateTime? expirationDate = null)
+        => Create(Guid.NewGuid(), name, companyId, manufacturerId, totalSeats, purchaseCost, expirationDate);
+
     public static SoftwareLicense Create(
+        Guid id,
         string name,
         Guid companyId,
         Guid? manufacturerId,
@@ -50,11 +60,8 @@ public sealed class SoftwareLicense : AuditableEntity<Guid>
         if (purchaseCost < 0)
             throw new ArgumentException("Purchase cost cannot be negative.", nameof(purchaseCost));
 
-        var license = new SoftwareLicense(
-            Guid.NewGuid(), name.Trim(), companyId, manufacturerId, totalSeats, purchaseCost, expirationDate);
-
-        // Raise domain event if needed
-        return license;
+        return new SoftwareLicense(
+            id, name.Trim(), companyId, manufacturerId, totalSeats, purchaseCost, expirationDate);
     }
 
     public void Update(
@@ -84,5 +91,17 @@ public sealed class SoftwareLicense : AuditableEntity<Guid>
     {
         IsDeleted = true;
         DeletedAtUtc = DateTime.UtcNow;
+    }
+
+    /// <summary>Extends or sets the expiration date (used by license renewal approvals).</summary>
+    public void ExtendExpiration(DateTime newExpirationUtc)
+    {
+        if (newExpirationUtc.Kind == DateTimeKind.Unspecified)
+            newExpirationUtc = DateTime.SpecifyKind(newExpirationUtc, DateTimeKind.Utc);
+
+        if (ExpirationDate is not null && newExpirationUtc <= ExpirationDate)
+            throw new ArgumentException("New expiration must be after the current expiration.", nameof(newExpirationUtc));
+
+        ExpirationDate = newExpirationUtc;
     }
 }

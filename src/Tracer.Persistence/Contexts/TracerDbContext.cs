@@ -39,6 +39,7 @@ public sealed class TracerDbContext : DbContext, Tracer.Application.Common.Inter
     public DbSet<Tracer.Domain.Aggregates.InventoryAggregate.Accessory> Accessories => Set<Tracer.Domain.Aggregates.InventoryAggregate.Accessory>();
     public DbSet<Tracer.Domain.Aggregates.InventoryAggregate.Component> Components => Set<Tracer.Domain.Aggregates.InventoryAggregate.Component>();
     public DbSet<Tracer.Domain.Aggregates.InventoryAggregate.Consumable> Consumables => Set<Tracer.Domain.Aggregates.InventoryAggregate.Consumable>();
+    public DbSet<Tracer.Domain.Aggregates.RequestAggregate.InventoryRequest> InventoryRequests => Set<Tracer.Domain.Aggregates.RequestAggregate.InventoryRequest>();
 
     // ── Financial (M5) ──
     public DbSet<Tracer.Domain.Aggregates.DepreciationAggregate.Depreciation> Depreciations => Set<Tracer.Domain.Aggregates.DepreciationAggregate.Depreciation>();

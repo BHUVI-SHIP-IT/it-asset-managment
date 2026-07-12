@@ -1,0 +1,54 @@
+<div class="page">
+  <h1>My Items</h1>
+
+  @if (loading()) {
+    <div class="loading"><mat-spinner></mat-spinner></div>
+  } @else {
+    <mat-card>
+      <mat-tab-group animationDuration="0ms">
+        @for (tab of [
+          { key: 'assets', label: 'Assets' },
+          { key: 'consumables', label: 'Consumables' },
+          { key: 'components', label: 'Components' },
+          { key: 'accessories', label: 'Accessories' },
+          { key: 'licenses', label: 'Licenses' }
+        ]; track tab.key) {
+          <mat-tab [label]="tab.label">
+            <div class="tab">
+              @if (forTab($any(tab.key)).length === 0) {
+                <p class="empty">No items assigned</p>
+              } @else {
+                <table mat-table [dataSource]="forTab($any(tab.key))" class="mat-elevation-z1">
+                  <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>Name</th>
+                    <td mat-cell *matCellDef="let row">
+                      @if (row.detailPath) {
+                        <a [routerLink]="row.detailPath">{{ row.name }}</a>
+                      } @else {
+                        {{ row.name }}
+                      }
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="identifier">
+                    <th mat-header-cell *matHeaderCellDef>Identifier</th>
+                    <td mat-cell *matCellDef="let row">{{ row.identifier || '—' }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="assignedAtUtc">
+                    <th mat-header-cell *matHeaderCellDef>Assigned</th>
+                    <td mat-cell *matCellDef="let row">{{ (row.assignedAtUtc | date:'medium') || '—' }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let row">{{ row.status || '—' }}</td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+              }
+            </div>
+          </mat-tab>
+        }
+      </mat-tab-group>
+    </mat-card>
+  }
+</div>

@@ -15,6 +15,19 @@ public sealed class ComponentConfiguration : IEntityTypeConfiguration<Component>
         builder.Property(c => c.PurchaseCost).HasColumnType("decimal(18,2)");
         builder.Property(c => c.RowVersion).IsRowVersion();
 
+        builder.HasIndex(c => c.AssignedUserId)
+            .HasDatabaseName("IX_Components_AssignedUserId");
+
+        builder.HasOne<Domain.Entities.ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(c => c.AssignedUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne<Domain.Entities.AssetModel>()
+            .WithMany()
+            .HasForeignKey(c => c.CompatibleAssetModelId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasQueryFilter(c => !c.IsDeleted);
 
         builder.HasIndex(c => new { c.CompanyId, c.Name })

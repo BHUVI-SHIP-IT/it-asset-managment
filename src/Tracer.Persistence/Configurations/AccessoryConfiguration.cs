@@ -15,6 +15,14 @@ public sealed class AccessoryConfiguration : IEntityTypeConfiguration<Accessory>
         builder.Property(a => a.PurchaseCost).HasColumnType("decimal(18,2)");
         builder.Property(a => a.RowVersion).IsRowVersion();
 
+        builder.HasIndex(a => a.AssignedUserId)
+            .HasDatabaseName("IX_Accessories_AssignedUserId");
+
+        builder.HasOne<Domain.Entities.ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(a => a.AssignedUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasQueryFilter(a => !a.IsDeleted);
 
         builder.HasIndex(a => new { a.CompanyId, a.Name })

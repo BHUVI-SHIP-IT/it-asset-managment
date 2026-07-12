@@ -100,6 +100,7 @@ try
         .UseSqlServerStorage(sqlConn));
     builder.Services.AddHangfireServer();
     builder.Services.AddScoped<Tracer.Api.BackgroundServices.ProcessOutboxMessagesJob>();
+    builder.Services.AddScoped<Tracer.Application.Common.Interfaces.IFinancialReportJob, Tracer.Api.BackgroundServices.FinancialReportJob>();
 
     // ── Health Checks ──
     var healthBuilder = builder.Services.AddHealthChecks();
@@ -329,7 +330,8 @@ try
         await Tracer.Persistence.Seed.MasterDataSeedData.EnsureSeededAsync(db);
         await Tracer.Persistence.Seed.UserSeedData.EnsureSeededAsync(db);
         await Tracer.Persistence.Seed.AssetSeedData.EnsureSeededAsync(db);
-        Log.Information("Development master-data, sample users, and demo assets ensured.");
+        await Tracer.Persistence.Seed.InventorySeedData.EnsureSeededAsync(db);
+        Log.Information("Development master-data, users, assets, and inventory ensured.");
     }
 
     app.Run();

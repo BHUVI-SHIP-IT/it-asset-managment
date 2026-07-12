@@ -1,0 +1,90 @@
+<div class="detail-container">
+  @if (loading()) {
+    <div class="loading-shade">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else if (user()) {
+    <div class="page-header">
+      <div class="header-content">
+        <button mat-icon-button routerLink="/users" class="back-button">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="title-section">
+          <h1>{{ user()!.fullName }}</h1>
+          <span class="meta-chip">{{ user()!.email }}</span>
+          <span class="meta-chip">{{ user()!.roleName }}</span>
+          <span class="status-chip" [class.active]="user()!.isActive" [class.inactive]="!user()!.isActive">
+            {{ user()!.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <mat-card class="detail-card">
+      <mat-tab-group animationDuration="0ms">
+        <mat-tab label="Assets">
+          <ng-container *ngTemplateOutlet="itemsTab; context: { $implicit: 'assets' }" />
+        </mat-tab>
+        <mat-tab label="Consumables">
+          <ng-container *ngTemplateOutlet="itemsTab; context: { $implicit: 'consumables' }" />
+        </mat-tab>
+        <mat-tab label="Components">
+          <ng-container *ngTemplateOutlet="itemsTab; context: { $implicit: 'components' }" />
+        </mat-tab>
+        <mat-tab label="Accessories">
+          <ng-container *ngTemplateOutlet="itemsTab; context: { $implicit: 'accessories' }" />
+        </mat-tab>
+        <mat-tab label="Licenses">
+          <ng-container *ngTemplateOutlet="itemsTab; context: { $implicit: 'licenses' }" />
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card>
+  }
+</div>
+
+<ng-template #itemsTab let-key>
+  <div class="tab-content">
+    @if (itemsLoading()) {
+      <div class="items-loading">
+        <mat-spinner diameter="36"></mat-spinner>
+      </div>
+    } @else if (itemsError()) {
+      <p class="items-empty">{{ itemsError() }}</p>
+    } @else if (itemsForTab(key).length === 0) {
+      <p class="items-empty">No items assigned</p>
+    } @else {
+      <table mat-table [dataSource]="itemsForTab(key)" class="mat-elevation-z1 items-table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef> Name </th>
+          <td mat-cell *matCellDef="let row">
+            @if (row.detailPath) {
+              <a [routerLink]="row.detailPath">{{ row.name }}</a>
+            } @else {
+              {{ row.name }}
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="identifier">
+          <th mat-header-cell *matHeaderCellDef> Identifier </th>
+          <td mat-cell *matCellDef="let row"> {{ row.identifier || '—' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="assignedAtUtc">
+          <th mat-header-cell *matHeaderCellDef> Assigned </th>
+          <td mat-cell *matCellDef="let row">
+            {{ (row.assignedAtUtc | date:'medium') || '—' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Status </th>
+          <td mat-cell *matCellDef="let row"> {{ row.status || '—' }} </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    }
+  </div>
+</ng-template>

@@ -282,6 +282,11 @@ namespace Tracer.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<decimal>("MinimumValue")
                         .HasColumnType("decimal(18,2)");
 
@@ -322,6 +327,12 @@ namespace Tracer.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AssignedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("AssignedUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
 
@@ -371,6 +382,9 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AssignedUserId")
+                        .HasDatabaseName("IX_Accessories_AssignedUserId");
 
                     b.HasIndex("CompanyId", "Name")
                         .IsUnique()
@@ -399,7 +413,16 @@ namespace Tracer.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AssignedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("AssignedUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CompatibleAssetModelId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAtUtc")
@@ -448,6 +471,11 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AssignedUserId")
+                        .HasDatabaseName("IX_Components_AssignedUserId");
+
+                    b.HasIndex("CompatibleAssetModelId");
 
                     b.HasIndex("CompanyId", "Name")
                         .IsUnique()
@@ -476,6 +504,12 @@ namespace Tracer.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AssignedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("AssignedUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
 
@@ -509,6 +543,9 @@ namespace Tracer.Persistence.Migrations
                     b.Property<decimal>("PurchaseCost")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("ReorderThreshold")
+                        .HasColumnType("int");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -525,6 +562,9 @@ namespace Tracer.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AssignedUserId")
+                        .HasDatabaseName("IX_Consumables_AssignedUserId");
 
                     b.HasIndex("CompanyId", "Name")
                         .IsUnique()
@@ -780,6 +820,89 @@ namespace Tracer.Persistence.Migrations
                     b.HasIndex("CompanyId", "Status");
 
                     b.ToTable("Notifications", (string)null);
+                });
+
+            modelBuilder.Entity("Tracer.Domain.Aggregates.RequestAggregate.InventoryRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ItemId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int?>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RequestedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RequestedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ResolutionNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("ResolvedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ResolvedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestedByUserId")
+                        .HasDatabaseName("IX_InventoryRequests_RequestedByUserId");
+
+                    b.HasIndex("ResolvedByUserId");
+
+                    b.HasIndex("CompanyId", "Status")
+                        .HasDatabaseName("IX_InventoryRequests_CompanyId_Status");
+
+                    b.ToTable("InventoryRequests", (string)null);
                 });
 
             modelBuilder.Entity("Tracer.Domain.Aggregates.SettingAggregate.TenantSetting", b =>
@@ -1691,6 +1814,30 @@ namespace Tracer.Persistence.Migrations
                             Id = 80,
                             Description = "Allows Depreciation.Create",
                             Name = "Depreciation.Create"
+                        },
+                        new
+                        {
+                            Id = 81,
+                            Description = "Allows Requests.Create",
+                            Name = "Requests.Create"
+                        },
+                        new
+                        {
+                            Id = 82,
+                            Description = "Allows Requests.ViewOwn",
+                            Name = "Requests.ViewOwn"
+                        },
+                        new
+                        {
+                            Id = 83,
+                            Description = "Allows Requests.ViewAll",
+                            Name = "Requests.ViewAll"
+                        },
+                        new
+                        {
+                            Id = 84,
+                            Description = "Allows Requests.Approve",
+                            Name = "Requests.Approve"
                         });
                 });
 
@@ -2247,6 +2394,26 @@ namespace Tracer.Persistence.Migrations
                         },
                         new
                         {
+                            RoleId = 1,
+                            PermissionId = 81
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 82
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 83
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 84
+                        },
+                        new
+                        {
                             RoleId = 10,
                             PermissionId = 1
                         },
@@ -2582,6 +2749,11 @@ namespace Tracer.Persistence.Migrations
 
             modelBuilder.Entity("Tracer.Domain.Aggregates.InventoryAggregate.Accessory", b =>
                 {
+                    b.HasOne("Tracer.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Tracer.Domain.Entities.Company", null)
                         .WithMany()
                         .HasForeignKey("CompanyId")
@@ -2591,15 +2763,30 @@ namespace Tracer.Persistence.Migrations
 
             modelBuilder.Entity("Tracer.Domain.Aggregates.InventoryAggregate.Component", b =>
                 {
+                    b.HasOne("Tracer.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Tracer.Domain.Entities.Company", null)
                         .WithMany()
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Tracer.Domain.Entities.AssetModel", null)
+                        .WithMany()
+                        .HasForeignKey("CompatibleAssetModelId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Tracer.Domain.Aggregates.InventoryAggregate.Consumable", b =>
                 {
+                    b.HasOne("Tracer.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Tracer.Domain.Entities.Company", null)
                         .WithMany()
                         .HasForeignKey("CompanyId")
@@ -2645,6 +2832,26 @@ namespace Tracer.Persistence.Migrations
                     b.HasOne("Tracer.Domain.Entities.Company", null)
                         .WithMany()
                         .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Tracer.Domain.Aggregates.RequestAggregate.InventoryRequest", b =>
+                {
+                    b.HasOne("Tracer.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Tracer.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("RequestedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Tracer.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ResolvedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 

@@ -22,6 +22,7 @@ public interface IApplicationDbContext
     DbSet<Tracer.Domain.Aggregates.InventoryAggregate.Accessory> Accessories { get; }
     DbSet<Tracer.Domain.Aggregates.InventoryAggregate.Component> Components { get; }
     DbSet<Tracer.Domain.Aggregates.InventoryAggregate.Consumable> Consumables { get; }
+    DbSet<Tracer.Domain.Aggregates.RequestAggregate.InventoryRequest> InventoryRequests { get; }
 
     DbSet<Tracer.Domain.Aggregates.DepreciationAggregate.Depreciation> Depreciations { get; }
     DbSet<ReportExport> ReportExports { get; }
