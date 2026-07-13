@@ -10,9 +10,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { ToastService } from '../../../core/ui/toast.service';
 import { AssetService, CreateAssetCommand, UpdateAssetCommand } from '../asset.service';
 
 interface LookupItem {
@@ -35,7 +35,6 @@ interface LookupItem {
     MatIconModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatSnackBarModule,
     MatProgressSpinnerModule
   ],
   templateUrl: './asset-form.component.html',
@@ -46,7 +45,7 @@ export class AssetFormComponent implements OnInit {
   private assetService = inject(AssetService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
   private http = inject(HttpClient);
 
   form!: FormGroup;
@@ -119,7 +118,7 @@ export class AssetFormComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.snackBar.open('Error loading asset', 'Close', { duration: 3000 });
+        this.toast.showError('Error loading asset');
         this.loading.set(false);
         this.router.navigate(['/assets']);
       }
@@ -161,11 +160,11 @@ export class AssetFormComponent implements OnInit {
 
       this.assetService.updateAsset(this.assetId, updateCommand).subscribe({
         next: () => {
-          this.snackBar.open('Asset updated successfully', 'Close', { duration: 3000 });
+          this.toast.showSuccess('Asset updated successfully');
           this.router.navigate(['/assets', this.assetId]);
         },
         error: (err) => {
-          this.snackBar.open(`Error: ${err.error?.detail || err.message || 'Failed to update asset'}`, 'Close', { duration: 5000 });
+          this.toast.showError(`${err.error?.detail || err.message || 'Failed to update asset'}`);
           this.submitting.set(false);
         }
       });
@@ -174,7 +173,7 @@ export class AssetFormComponent implements OnInit {
       // ASP.NET [FromBody] CreateAssetCommand command binds the whole JSON body.
       this.assetService.createAsset(payload).subscribe({
         next: (newId) => {
-          this.snackBar.open('Asset created successfully', 'Close', { duration: 3000 });
+          this.toast.showSuccess('Asset created successfully');
           this.router.navigate(['/assets', newId]);
         },
         error: (err) => {
@@ -182,7 +181,7 @@ export class AssetFormComponent implements OnInit {
             || (err.error?.errors && JSON.stringify(err.error.errors))
             || err.message
             || 'Failed to create asset';
-          this.snackBar.open(`Error: ${detail}`, 'Close', { duration: 5000 });
+          this.toast.showError(`${detail}`);
           this.submitting.set(false);
         }
       });

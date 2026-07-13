@@ -5,8 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Permissions } from '../../../core/auth/permissions';
+import { ToastService } from '../../../core/ui/toast.service';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { RequestDto, RequestService } from '../request.service';
 
@@ -20,7 +20,6 @@ import { RequestDto, RequestService } from '../request.service';
     MatTabsModule,
     MatTableModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
     HasPermissionDirective
   ],
   templateUrl: './approval-queue.component.html',
@@ -29,7 +28,7 @@ import { RequestDto, RequestService } from '../request.service';
 export class ApprovalQueueComponent implements OnInit {
   readonly permissions = Permissions;
   private requestService = inject(RequestService);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
   loading = signal(true);
   pending = signal<RequestDto[]>([]);
@@ -50,7 +49,7 @@ export class ApprovalQueueComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.snackBar.open('Failed to load approval queue', 'Close', { duration: 4000 });
+        this.toast.showError('Failed to load approval queue');
         this.loading.set(false);
       }
     });
@@ -59,11 +58,11 @@ export class ApprovalQueueComponent implements OnInit {
   approve(row: RequestDto): void {
     this.requestService.approve(row.id).subscribe({
       next: () => {
-        this.snackBar.open('Request approved', 'Close', { duration: 3000 });
+        this.toast.showSuccess('Request approved');
         this.reload();
       },
       error: err => {
-        this.snackBar.open(err?.error?.detail || 'Approve failed', 'Close', { duration: 5000 });
+        this.toast.showError(err?.error?.detail || 'Approve failed');
       }
     });
   }
@@ -71,11 +70,11 @@ export class ApprovalQueueComponent implements OnInit {
   reject(row: RequestDto): void {
     this.requestService.reject(row.id).subscribe({
       next: () => {
-        this.snackBar.open('Request rejected', 'Close', { duration: 3000 });
+        this.toast.showSuccess('Request rejected');
         this.reload();
       },
       error: err => {
-        this.snackBar.open(err?.error?.detail || 'Reject failed', 'Close', { duration: 5000 });
+        this.toast.showError(err?.error?.detail || 'Reject failed');
       }
     });
   }

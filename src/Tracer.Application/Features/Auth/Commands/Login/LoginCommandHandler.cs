@@ -71,6 +71,6 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<T
 
         // JWT expiration comes from settings, we'll just hardcode the DTO for now or add to IJwtProvider.
         // Actually, we can just return it. Let's return 15 mins for now (900 seconds)
-        return Result.Success(new TokenResponse(token, 900));
+        return Result.Success(new TokenResponse(token, refreshToken, 900));
     }
 }

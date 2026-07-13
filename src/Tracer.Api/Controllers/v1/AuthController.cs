@@ -27,14 +27,8 @@ public class AuthController : ControllerBase
         var result = await _mediator.Send(command, cancellationToken);
         if (result.IsSuccess)
         {
-            // Usually, refresh token goes into HttpOnly Cookie. 
-            // For now, we return both in the body for simplicity, or we can set it here.
-            // Let's set refresh token in cookie as per Doc 5
-            
-            // In a real app we would extract the refresh token from the result and set the cookie.
-            // Since our DTO only has AccessToken, we need to adjust DTO to have RefreshToken to set cookie,
-            // or just rely on the body. We'll rely on the body or simplify.
-            // Actually, for this PoC, returning token response is fine.
+            // Refresh token is returned in the TokenResponse body for the SPA to persist
+            // and send back on POST /api/v1/auth/refresh.
             return Ok(result.Value);
         }
 

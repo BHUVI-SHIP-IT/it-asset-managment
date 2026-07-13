@@ -2,8 +2,9 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tracer.Application.Common.Interfaces;
+using Tracer.Application.Features.Dashboard.DTOs;
+using Tracer.Application.Features.Dashboard.Queries;
 using Tracer.Application.Features.Users.Queries;
-using Tracer.Shared.Authorization;
 
 namespace Tracer.Api.Controllers.v1;
 
@@ -36,5 +37,21 @@ public sealed class MeController : ControllerBase
 
         var result = await _sender.Send(new GetUserAssignedItemsQuery(userId.Value), cancellationToken);
         return result is null ? NotFound() : Ok(result);
+    }
+
+    /// <summary>
+    /// Dashboard summary for the authenticated user only (JWT sub). No admin/org-wide data.
+    /// </summary>
+    [HttpGet("summary")]
+    [ProducesResponseType(typeof(UserDashboardSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<UserDashboardSummaryDto>> GetMySummary(CancellationToken cancellationToken)
+    {
+        var userId = _currentUser.UserId;
+        if (userId is null)
+            return Unauthorized();
+
+        var result = await _sender.Send(new GetUserDashboardSummaryQuery(userId.Value), cancellationToken);
+        return Ok(result);
     }
 }

@@ -1,11 +1,11 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FinancialsService, ReportExportDto } from '../../../core/services/financials';
+import { ToastService } from '../../../core/ui/toast.service';
 
 @Component({
   selector: 'app-reports',
@@ -16,7 +16,6 @@ import { FinancialsService, ReportExportDto } from '../../../core/services/finan
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    MatSnackBarModule
   ],
   template: `
     <div class="header">
@@ -26,7 +25,7 @@ import { FinancialsService, ReportExportDto } from '../../../core/services/finan
       </button>
     </div>
 
-    <table mat-table [dataSource]="reports" class="mat-elevation-z8">
+    <table mat-table [dataSource]="reports()" class="mat-elevation-z8">
       <ng-container matColumnDef="type">
         <th mat-header-cell *matHeaderCellDef> Type </th>
         <td mat-cell *matCellDef="let element"> {{element.reportType}} </td>
@@ -85,9 +84,9 @@ import { FinancialsService, ReportExportDto } from '../../../core/services/finan
 })
 export class ReportsComponent implements OnInit, OnDestroy {
   private financialsService = inject(FinancialsService);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
-  reports: ReportExportDto[] = [];
+  reports = signal<ReportExportDto[]>([]);
   displayedColumns: string[] = ['type', 'requestedAt', 'status', 'actions'];
   generating = false;
 
@@ -106,11 +105,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
   loadReports() {
     this.financialsService.getReports().subscribe({
       next: data => {
-        this.reports = data ?? [];
+        this.reports.set(data ?? []);
         this.syncPolling();
       },
       error: () => {
-        this.snackBar.open('Failed to load reports', 'Close', { duration: 5000 });
+        this.toast.showError('Failed to load reports');
       }
     });
   }
@@ -120,14 +119,14 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.financialsService.requestReport(type).subscribe({
       next: () => {
         this.generating = false;
-        this.snackBar.open('Report queued', 'Close', { duration: 3000 });
+        this.toast.showSuccess('Report queued');
         this.pollAttempts = 0;
         this.loadReports();
       },
       error: err => {
         this.generating = false;
         const detail = err?.error?.detail || 'Failed to start report';
-        this.snackBar.open(detail, 'Close', { duration: 5000 });
+        this.toast.showError(detail);
       }
     });
   }
@@ -143,7 +142,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         window.URL.revokeObjectURL(url);
       },
       error: () => {
-        this.snackBar.open('Download failed — report may still be processing', 'Close', { duration: 5000 });
+        this.toast.showError('Download failed — report may still be processing');
       }
     });
   }
@@ -160,7 +159,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   private syncPolling() {
-    const hasPending = this.reports.some(r => r.status === 'Pending');
+    const hasPending = this.reports().some(r => r.status === 'Pending');
     if (!hasPending) {
       this.stopPolling();
       return;
@@ -176,13 +175,13 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.pollAttempts += 1;
       if (this.pollAttempts > this.maxPollAttempts) {
         this.stopPolling();
-        this.snackBar.open('Report is still pending — refresh later', 'Close', { duration: 5000 });
+        this.toast.showInfo('Report is still pending — refresh later');
         return;
       }
       this.financialsService.getReports().subscribe({
         next: data => {
-          this.reports = data ?? [];
-          if (!this.reports.some(r => r.status === 'Pending')) {
+          this.reports.set(data ?? []);
+          if (!this.reports().some(r => r.status === 'Pending')) {
             this.stopPolling();
           }
         },

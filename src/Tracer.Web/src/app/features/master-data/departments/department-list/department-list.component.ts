@@ -1,4 +1,5 @@
 import { Permissions } from '../../../../core/auth/permissions';
+import { ToastService } from '../../../../core/ui/toast.service';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -8,10 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
 
 import { BaseTableComponent, PaginatedResult } from '../../../../shared/components/base-table/base-table.component';
+import { ConfirmDialogService } from '../../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { Department, DepartmentService } from '../department.service';
 import { DepartmentFormDialogComponent } from '../department-form-dialog/department-form-dialog.component';
@@ -28,7 +29,6 @@ import { DepartmentFormDialogComponent } from '../department-form-dialog/departm
     MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatSnackBarModule,
     HasPermissionDirective
   ],
   templateUrl: './department-list.component.html',
@@ -39,7 +39,8 @@ export class DepartmentListComponent extends BaseTableComponent<Department> impl
 
   private departmentService = inject(DepartmentService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private confirmDialog = inject(ConfirmDialogService);
+  private toast = inject(ToastService);
 
   displayedColumns = ['name', 'actions'];
 
@@ -61,11 +62,11 @@ export class DepartmentListComponent extends BaseTableComponent<Department> impl
       if (result) {
         this.departmentService.createDepartment(result).subscribe({
           next: () => {
-            this.snackBar.open('Department created successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Department created successfully');
             this.loadData();
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to create department'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${err.message || 'Failed to create department'}`);
           }
         });
       }
@@ -82,11 +83,11 @@ export class DepartmentListComponent extends BaseTableComponent<Department> impl
       if (result) {
         this.departmentService.updateDepartment(department.id, { ...result, id: department.id }).subscribe({
           next: () => {
-            this.snackBar.open('Department updated successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Department updated successfully');
             this.loadData();
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to update department'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${err.message || 'Failed to update department'}`);
           }
         });
       }
@@ -94,16 +95,25 @@ export class DepartmentListComponent extends BaseTableComponent<Department> impl
   }
 
   deleteDepartment(department: Department): void {
-    if (confirm(`Are you sure you want to delete the department '${department.name}'?`)) {
-      this.departmentService.deleteDepartment(department.id).subscribe({
-        next: () => {
-          this.snackBar.open('Department deleted successfully', 'Close', { duration: 3000 });
-          this.loadData();
-        },
-        error: (err) => {
-          this.snackBar.open(`Error: ${err.message || 'Failed to delete department'}`, 'Close', { duration: 5000 });
+    this.confirmDialog
+      .open({
+        title: 'Delete department',
+        message: `Are you sure you want to delete the department '${department.name}'?`,
+        confirmText: 'Delete'
+      })
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
         }
+        this.departmentService.deleteDepartment(department.id).subscribe({
+          next: () => {
+            this.toast.showSuccess('Department deleted successfully');
+            this.loadData();
+          },
+          error: (err) => {
+            this.toast.showError(`${err.message || 'Failed to delete department'}`);
+          }
+        });
       });
-    }
   }
 }

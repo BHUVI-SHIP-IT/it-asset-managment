@@ -1,0 +1,28 @@
+services:
+  tracer-api:
+    build:
+      context: .
+      dockerfile: src/Tracer.Api/Dockerfile
+      target: watch
+    volumes:
+      - ./src:/src
+      - ./Directory.Build.props:/src/Directory.Build.props:ro
+    environment:
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+    working_dir: /src
+
+  tracer-web:
+    build:
+      context: src/Tracer.Web
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./src/Tracer.Web:/app
+      - tracer-web-node-modules:/app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: ["npm", "run", "start:docker"]
+
+volumes:
+  tracer-web-node-modules:

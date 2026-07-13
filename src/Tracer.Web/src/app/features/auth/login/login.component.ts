@@ -8,8 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ToastService } from '../../../core/ui/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +23,6 @@ import { AuthService } from '../../../core/auth/auth.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
   ],
   template: `
     <div class="login-container">
@@ -242,7 +241,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
   email = 'admin@tracer.io';
   password = 'Admin123!';
@@ -255,14 +254,14 @@ export class LoginComponent {
       next: (res) => {
         this.loading.set(false);
         if (res) {
-          this.router.navigate(['/assets']);
+          this.router.navigate(['/dashboard']);
         } else {
-          this.snackBar.open('Invalid credentials. Please try again.', 'Close', { duration: 4000 });
+          this.toast.showError('Invalid credentials. Please try again.');
         }
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Login failed. Check your credentials.', 'Close', { duration: 4000 });
+        this.toast.showError('Login failed. Check your credentials.');
       }
     });
   }

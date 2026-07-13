@@ -2481,6 +2481,21 @@ namespace Tracer.Persistence.Migrations
                         {
                             RoleId = 5,
                             PermissionId = 68
+                        },
+                        new
+                        {
+                            RoleId = 11,
+                            PermissionId = 23
+                        },
+                        new
+                        {
+                            RoleId = 11,
+                            PermissionId = 81
+                        },
+                        new
+                        {
+                            RoleId = 11,
+                            PermissionId = 82
                         });
                 });
 

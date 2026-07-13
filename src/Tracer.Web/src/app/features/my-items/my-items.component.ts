@@ -5,7 +5,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ToastService } from '../../core/ui/toast.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { Permissions } from '../../core/auth/permissions';
 import {
   AssignedItemDto,
   UserAssignedItemsDto,
@@ -22,14 +24,14 @@ import {
     MatCardModule,
     MatTableModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
   ],
   templateUrl: './my-items.component.html',
   styleUrls: ['./my-items.component.scss']
 })
 export class MyItemsComponent implements OnInit {
   private userService = inject(UserService);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
+  private auth = inject(AuthService);
 
   loading = signal(true);
   items = signal<UserAssignedItemsDto | null>(null);
@@ -42,7 +44,7 @@ export class MyItemsComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.snackBar.open('Failed to load your items', 'Close', { duration: 4000 });
+        this.toast.showError('Failed to load your items');
         this.loading.set(false);
       }
     });
@@ -50,5 +52,14 @@ export class MyItemsComponent implements OnInit {
 
   forTab(key: keyof UserAssignedItemsDto): AssignedItemDto[] {
     return this.items()?.[key] ?? [];
+  }
+
+  /** Only link to admin detail pages when the user can view that resource. */
+  canOpenDetail(row: AssignedItemDto): boolean {
+    if (!row.detailPath) return false;
+    if (row.detailPath.startsWith('/assets/')) {
+      return this.auth.hasPermission(Permissions.Assets.View);
+    }
+    return true;
   }
 }

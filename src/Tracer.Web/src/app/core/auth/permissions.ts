@@ -143,8 +143,20 @@ export function getManagePermission(permission: string): string | null {
   return `${permission.slice(0, dot)}.Manage`;
 }
 
+/** True if the user has the exact permission, or the matching `{Resource}.Manage` grant. */
 export function satisfiesPermission(userPermissions: readonly string[], required: string): boolean {
+  if (!required) return false;
   if (userPermissions.includes(required)) return true;
   const manage = getManagePermission(required);
   return manage !== null && userPermissions.includes(manage);
+}
+
+/** True if any of the required permissions is satisfied (OR semantics). */
+export function satisfiesAnyPermission(
+  userPermissions: readonly string[],
+  required: string | readonly string[]
+): boolean {
+  const list = typeof required === 'string' ? [required] : required;
+  if (list.length === 0) return false;
+  return list.some(p => satisfiesPermission(userPermissions, p));
 }

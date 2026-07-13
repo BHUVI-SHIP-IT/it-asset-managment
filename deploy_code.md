@@ -1,14 +1,13 @@
 cd /home/sakthi/projects/new
 
-# Build + start (host-network workaround)
-docker compose -f docker-compose.yml -f docker-compose.host.yml up -d --build
+# Stop any previous stack (avoids port conflicts)
+docker compose down
 
-# Apply DB migrations
-export PATH="$HOME/.dotnet:$PATH:$HOME/.dotnet/tools"
-dotnet ef database update \
-  --project src/Tracer.Persistence/Tracer.Persistence.csproj \
-  --startup-project src/Tracer.Api/Tracer.Api.csproj
+# Build + start full stack (migrations run inside tracer-api)
+docker compose up -d --build
 
+# Hot-reload (optional):
+# docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
-to stop: 
-  docker compose -f docker-compose.yml -f docker-compose.host.yml down
+# Stop:
+# docker compose down

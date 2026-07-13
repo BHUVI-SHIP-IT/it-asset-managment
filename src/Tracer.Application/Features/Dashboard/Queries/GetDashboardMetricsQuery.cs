@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Tracer.Application.Common.Interfaces;
 using Tracer.Application.Features.Dashboard.DTOs;
 using Tracer.Domain.Aggregates.AssetAggregate;
+using Tracer.Domain.Aggregates.RequestAggregate;
 
 namespace Tracer.Application.Features.Dashboard.Queries;
 
@@ -31,12 +32,18 @@ public sealed class GetDashboardMetricsQueryHandler : IRequestHandler<GetDashboa
                  && a.CheckedOutAtUtc < overdueCutoff,
             cancellationToken);
 
+        var pendingApprovals = await _context.InventoryRequests
+            .CountAsync(
+                r => r.CompanyId == request.CompanyId && r.Status == RequestStatus.Pending,
+                cancellationToken);
+
         return new DashboardMetricsDto
         {
             TotalAssets = totalAssets,
             ActiveAssets = activeAssets,
             PendingCheckouts = pendingCheckouts,
-            OverdueCheckins = overdueCheckins
+            OverdueCheckins = overdueCheckins,
+            PendingApprovals = pendingApprovals
         };
     }
 }

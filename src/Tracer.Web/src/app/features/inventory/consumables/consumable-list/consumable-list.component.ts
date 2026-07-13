@@ -1,11 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Permissions } from '../../../../core/auth/permissions';
+import { ToastService } from '../../../../core/ui/toast.service';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { InventoryService, ConsumableDto } from '../../../../core/services/inventory';
 import { ConsumableFormDialogComponent } from '../consumable-form-dialog/consumable-form-dialog.component';
@@ -19,7 +19,6 @@ import { ConsumableFormDialogComponent } from '../consumable-form-dialog/consuma
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatSnackBarModule,
     HasPermissionDirective
   ],
   template: `
@@ -32,7 +31,7 @@ import { ConsumableFormDialogComponent } from '../consumable-form-dialog/consuma
       </button>
     </div>
 
-    <table mat-table [dataSource]="consumables" class="mat-elevation-z8">
+    <table mat-table [dataSource]="consumables()" class="mat-elevation-z8">
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef> ID </th>
         <td mat-cell *matCellDef="let element"> {{element.id}} </td>
@@ -74,9 +73,9 @@ export class ConsumableListComponent implements OnInit {
 
   private inventoryService = inject(InventoryService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
-  consumables: ConsumableDto[] = [];
+  consumables = signal<ConsumableDto[]>([]);
   displayedColumns: string[] = ['id', 'name', 'quantity', 'cost'];
 
   ngOnInit() {
@@ -86,10 +85,10 @@ export class ConsumableListComponent implements OnInit {
   loadConsumables() {
     this.inventoryService.getConsumables().subscribe({
       next: data => {
-        this.consumables = data;
+        this.consumables.set(data);
       },
       error: () => {
-        this.snackBar.open('Failed to load consumables', 'Close', { duration: 5000 });
+        this.toast.showError('Failed to load consumables');
       }
     });
   }
@@ -106,12 +105,12 @@ export class ConsumableListComponent implements OnInit {
       }
       this.inventoryService.createConsumable(result).subscribe({
         next: () => {
-          this.snackBar.open('Consumable created successfully', 'Close', { duration: 3000 });
+          this.toast.showSuccess('Consumable created successfully');
           this.loadConsumables();
         },
         error: err => {
           const detail = err?.error?.detail || err?.message || 'Failed to create consumable';
-          this.snackBar.open(`Error: ${detail}`, 'Close', { duration: 5000 });
+          this.toast.showError(`${detail}`);
         }
       });
     });

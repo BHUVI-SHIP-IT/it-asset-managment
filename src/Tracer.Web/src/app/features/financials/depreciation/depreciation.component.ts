@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,7 +14,7 @@ import { FinancialsService, DepreciationDto } from '../../../core/services/finan
       <h2>Depreciation Schedules</h2>
     </div>
 
-    <table mat-table [dataSource]="schedules" class="mat-elevation-z8">
+    <table mat-table [dataSource]="schedules()" class="mat-elevation-z8">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef> Name </th>
         <td mat-cell *matCellDef="let element"> {{element.name}} </td>
@@ -49,7 +49,7 @@ import { FinancialsService, DepreciationDto } from '../../../core/services/finan
 export class DepreciationComponent implements OnInit {
   private financialsService = inject(FinancialsService);
 
-  schedules: DepreciationDto[] = [];
+  schedules = signal<DepreciationDto[]>([]);
   displayedColumns: string[] = ['name', 'months', 'minimumValue'];
 
   ngOnInit() {
@@ -58,8 +58,8 @@ export class DepreciationComponent implements OnInit {
 
   loadSchedules() {
     this.financialsService.getDepreciationSchedules().subscribe({
-      next: data => this.schedules = data,
-      error: () => this.schedules = []
+      next: data => this.schedules.set(data),
+      error: () => this.schedules.set([])
     });
   }
 }

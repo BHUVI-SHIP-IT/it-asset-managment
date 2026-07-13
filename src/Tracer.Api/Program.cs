@@ -4,6 +4,7 @@ using FluentValidation;
 using Hangfire;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
 
 using Serilog;
 using Serilog.Events;
@@ -116,7 +117,8 @@ try
     {
         options.AddPolicy("AllowAngular", policy =>
         {
-            var origins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? ["http://localhost:4200"];
+            var origins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+                ?? ["http://localhost:4200", "http://tracer-web"];
             policy.WithOrigins(origins)
                 .AllowAnyMethod()
                 .AllowAnyHeader()
@@ -321,17 +323,29 @@ try
 
     Log.Information("Starting Tracer API (M7 Hardened — high-concurrency optimized)...");
 
-    // Dev-only: ensure asset-form lookup dropdowns have sample master data.
-    // (EF migrations are not applied on startup per Doc 11.)
-    if (app.Environment.IsDevelopment())
+    // Apply EF migrations when running in Compose (RUN_MIGRATIONS=true) or Development.
+    // Seed sample data in Development only.
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<Tracer.Persistence.Contexts.TracerDbContext>();
-        await Tracer.Persistence.Seed.MasterDataSeedData.EnsureSeededAsync(db);
-        await Tracer.Persistence.Seed.UserSeedData.EnsureSeededAsync(db);
-        await Tracer.Persistence.Seed.AssetSeedData.EnsureSeededAsync(db);
-        await Tracer.Persistence.Seed.InventorySeedData.EnsureSeededAsync(db);
-        Log.Information("Development master-data, users, assets, and inventory ensured.");
+        var runMigrations = app.Environment.IsDevelopment()
+            || string.Equals(Environment.GetEnvironmentVariable("RUN_MIGRATIONS"), "true", StringComparison.OrdinalIgnoreCase);
+
+        if (runMigrations)
+        {
+            await db.Database.MigrateAsync();
+            Log.Information("EF Core migrations applied.");
+        }
+
+        if (app.Environment.IsDevelopment())
+        {
+            await Tracer.Persistence.Seed.RolePermissionSeedData.EnsureEmployeePermissionsAsync(db);
+            await Tracer.Persistence.Seed.MasterDataSeedData.EnsureSeededAsync(db);
+            await Tracer.Persistence.Seed.UserSeedData.EnsureSeededAsync(db);
+            await Tracer.Persistence.Seed.AssetSeedData.EnsureSeededAsync(db);
+            await Tracer.Persistence.Seed.InventorySeedData.EnsureSeededAsync(db);
+            Log.Information("Development master-data, users, assets, and inventory ensured.");
+        }
     }
 
     app.Run();

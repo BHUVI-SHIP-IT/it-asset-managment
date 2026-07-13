@@ -49,6 +49,6 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(new TokenResponse(token, 900));
+        return Result.Success(new TokenResponse(token, newRefreshToken, 900));
     }
 }

@@ -1,59 +1,46 @@
 # TracerWeb
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.5.
+Angular frontend for Tracer. **Do not use `ng serve` on the host** — run the app through Docker Compose so the UI, API, and database share the same network.
 
-## Development server
+## Run (recommended)
 
-To start a local development server, run:
+From the repository root:
 
 ```bash
-ng serve
+docker compose up -d --build
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open http://localhost:4200/
+
+Hot-reload (bind-mounted sources):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+The production image serves static files with nginx and proxies `/api` → `http://tracer-api:8080`. The hot-reload image uses `proxy.docker.json` for the same Compose DNS name.
 
 ## Code scaffolding
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
 ```bash
-ng generate component component-name
+# Inside a Node container or after npm ci in Tracer.Web (for generating files only):
+npx ng generate component component-name
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Building (used by Docker)
 
 ```bash
-ng generate --help
+npm run build
 ```
 
-## Building
+Artifacts land in `dist/`. The `Dockerfile` runs this step during image build.
 
-To build the project run:
+## Tests
 
 ```bash
-ng build
+npm test
 ```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
 ## Additional Resources
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+[Angular CLI Overview](https://angular.dev/tools/cli)

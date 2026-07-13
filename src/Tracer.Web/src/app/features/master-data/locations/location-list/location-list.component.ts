@@ -1,4 +1,5 @@
 import { Permissions } from '../../../../core/auth/permissions';
+import { ToastService } from '../../../../core/ui/toast.service';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -8,10 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
 
 import { BaseTableComponent, PaginatedResult } from '../../../../shared/components/base-table/base-table.component';
+import { ConfirmDialogService } from '../../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { Location, LocationService } from '../location.service';
 import { LocationFormDialogComponent } from '../location-form-dialog/location-form-dialog.component';
@@ -28,7 +29,6 @@ import { LocationFormDialogComponent } from '../location-form-dialog/location-fo
     MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatSnackBarModule,
     HasPermissionDirective
   ],
   templateUrl: './location-list.component.html',
@@ -39,7 +39,8 @@ export class LocationListComponent extends BaseTableComponent<Location> implemen
 
   private locationService = inject(LocationService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private confirmDialog = inject(ConfirmDialogService);
+  private toast = inject(ToastService);
 
   displayedColumns = ['name', 'actions'];
 
@@ -62,11 +63,11 @@ export class LocationListComponent extends BaseTableComponent<Location> implemen
       if (result) {
         this.locationService.createLocation(result).subscribe({
           next: () => {
-            this.snackBar.open('Location created successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Location created successfully');
             this.loadData();
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to create location'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${err.message || 'Failed to create location'}`);
           }
         });
       }
@@ -83,11 +84,11 @@ export class LocationListComponent extends BaseTableComponent<Location> implemen
       if (result) {
         this.locationService.updateLocation(location.id, { ...result, id: location.id }).subscribe({
           next: () => {
-            this.snackBar.open('Location updated successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Location updated successfully');
             this.loadData();
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to update location'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${err.message || 'Failed to update location'}`);
           }
         });
       }
@@ -95,16 +96,25 @@ export class LocationListComponent extends BaseTableComponent<Location> implemen
   }
 
   deleteLocation(location: Location): void {
-    if (confirm(`Are you sure you want to delete the location '${location.name}'?`)) {
-      this.locationService.deleteLocation(location.id).subscribe({
-        next: () => {
-          this.snackBar.open('Location deleted successfully', 'Close', { duration: 3000 });
-          this.loadData();
-        },
-        error: (err) => {
-          this.snackBar.open(`Error: ${err.message || 'Failed to delete location'}`, 'Close', { duration: 5000 });
+    this.confirmDialog
+      .open({
+        title: 'Delete location',
+        message: `Are you sure you want to delete the location '${location.name}'?`,
+        confirmText: 'Delete'
+      })
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
         }
+        this.locationService.deleteLocation(location.id).subscribe({
+          next: () => {
+            this.toast.showSuccess('Location deleted successfully');
+            this.loadData();
+          },
+          error: (err) => {
+            this.toast.showError(`${err.message || 'Failed to delete location'}`);
+          }
+        });
       });
-    }
   }
 }

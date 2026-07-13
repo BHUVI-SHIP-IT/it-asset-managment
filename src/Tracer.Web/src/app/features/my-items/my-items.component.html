@@ -22,7 +22,7 @@
                   <ng-container matColumnDef="name">
                     <th mat-header-cell *matHeaderCellDef>Name</th>
                     <td mat-cell *matCellDef="let row">
-                      @if (row.detailPath) {
+                      @if (canOpenDetail(row)) {
                         <a [routerLink]="row.detailPath">{{ row.name }}</a>
                       } @else {
                         {{ row.name }}

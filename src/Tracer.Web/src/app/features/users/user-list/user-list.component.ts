@@ -1,4 +1,5 @@
 import { Permissions } from '../../../core/auth/permissions';
+import { ToastService } from '../../../core/ui/toast.service';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -9,7 +10,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { Observable } from 'rxjs';
 
@@ -31,7 +31,6 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
     MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatSnackBarModule,
     MatChipsModule,
     HasPermissionDirective
   ],
@@ -43,7 +42,7 @@ export class UserListComponent extends BaseTableComponent<UserDto> implements On
 
   private userService = inject(UserService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
   displayedColumns = ['fullName', 'email', 'roleName', 'isActive'];
 
@@ -62,12 +61,12 @@ export class UserListComponent extends BaseTableComponent<UserDto> implements On
       if (!result) return;
       this.userService.createUser(result).subscribe({
         next: () => {
-          this.snackBar.open('User created successfully', 'Close', { duration: 3000 });
+          this.toast.showSuccess('User created successfully');
           this.loadData();
         },
         error: (err) => {
           const detail = err?.error?.detail || err?.message || 'Failed to create user';
-          this.snackBar.open(`Error: ${detail}`, 'Close', { duration: 5000 });
+          this.toast.showError(`${detail}`);
         }
       });
     });

@@ -2,18 +2,11 @@
   <mat-sidenav #sidenav mode="side" opened class="sidenav">
     <mat-toolbar>Tracer IAM</mat-toolbar>
     <mat-nav-list>
-      @for (item of navItems; track item.route) {
-        @if (item.permission) {
-          <a mat-list-item [routerLink]="item.route" routerLinkActive="active" *hasPermission="item.permission">
-            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-            <span matListItemTitle>{{ item.label }}</span>
-          </a>
-        } @else {
-          <a mat-list-item [routerLink]="item.route" routerLinkActive="active">
-            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-            <span matListItemTitle>{{ item.label }}</span>
-          </a>
-        }
+      @for (item of navItems(); track item.route) {
+        <a mat-list-item [routerLink]="item.route" routerLinkActive="active">
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
       }
     </mat-nav-list>
   </mat-sidenav>

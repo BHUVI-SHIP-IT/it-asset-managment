@@ -1,90 +1,59 @@
-# Deploy Tracer with Docker
+# Deploy Tracer (Docker Compose only)
 
-## Why host networking?
+The full stack (Angular UI, .NET API, SQL Server, Redis, Seq) runs exclusively via Docker Compose on the default bridge network. Services reach each other by **Compose service name** (`sql-server`, `redis`, `tracer-api`, `tracer-web`, `seq`) — not host `localhost` inside containers.
 
-On this machine Docker **bridge/veth** networking fails:
-
-```text
-failed to add the host (veth...) <=> sandbox (veth...) pair interfaces: operation not supported
-```
-
-Root cause: running kernel modules don’t match (reboot after a `linux` package upgrade usually fixes bridge mode). Until then, use the **host-network** overlay.
-
-Permanent fix for bridge networking later:
-
-```bash
-sudo reboot   # after pacman -Syu linux / linux-headers
-# then: sudo modprobe veth && docker run --rm hello-world
-```
-
----
-
-## Deploy (commands used)
-
-From the repo root:
+## Quick start
 
 ```bash
 cd /home/sakthi/projects/new
 
-# Build images + start SQL, Redis, API, Web (host network)
-docker compose -f docker-compose.yml -f docker-compose.host.yml up -d --build
+# Stop any previous stack
+docker compose down
 
-# Apply EF migrations (from host; SQL on localhost:1433)
-export PATH="$HOME/.dotnet:$PATH:$HOME/.dotnet/tools"
-dotnet ef database update \
-  --project src/Tracer.Persistence/Tracer.Persistence.csproj \
-  --startup-project src/Tracer.Api/Tracer.Api.csproj
+# Build and start (API applies EF migrations on startup when RUN_MIGRATIONS=true)
+docker compose up -d --build
 ```
 
-Or one script:
+## Hot-reload development
+
+Bind-mounts source and watches for changes:
 
 ```bash
-./scripts/deploy-docker.sh
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
----
-
-## URLs
+## URLs (published on the host)
 
 | Service | URL |
 |---------|-----|
 | Angular UI | http://localhost:4200 |
 | API | http://localhost:5001 |
 | API health | http://localhost:5001/health/live |
-| SQL Server | localhost:1433 |
-| Redis | localhost:6379 |
+| Seq UI | http://localhost:8081 |
 
 **Login:** `admin@tracer.io` / `Admin123!`
 
----
+Inside the Compose network:
+
+| From | To |
+|------|----|
+| `tracer-web` (nginx) | `http://tracer-api:8080` |
+| `tracer-api` | `Server=sql-server;...` / `redis:6379` / `http://seq:5341` |
 
 ## Useful commands
 
 ```bash
-# Status
-docker compose -f docker-compose.yml -f docker-compose.host.yml ps -a
-
-# Logs
-docker compose -f docker-compose.yml -f docker-compose.host.yml logs -f tracer-api
-docker compose -f docker-compose.yml -f docker-compose.host.yml logs -f tracer-web
-
-# Stop
-docker compose -f docker-compose.yml -f docker-compose.host.yml down
-
-# Stop + wipe DB volume
-docker compose -f docker-compose.yml -f docker-compose.host.yml down -v
+docker compose ps -a
+docker compose logs -f tracer-api
+docker compose logs -f tracer-web
+docker compose down
+docker compose down -v   # wipe DB / Redis / Seq volumes
 ```
 
----
+Or: `./scripts/deploy-docker.sh`
 
-## Files involved
+## Files
 
-- [`docker-compose.yml`](docker-compose.yml) — base stack
-- [`docker-compose.host.yml`](docker-compose.host.yml) — host-network workaround + localhost connection strings
-- [`src/Tracer.Web/nginx.host.conf`](src/Tracer.Web/nginx.host.conf) — UI on `:4200`, proxies `/api` → `127.0.0.1:5001`
-- [`scripts/deploy-docker.sh`](scripts/deploy-docker.sh) — build + migrate helper
-
-## Notes
-
-- Seq may exit under host networking; it is optional for the app.
-- Do **not** use plain `docker compose up --build` until `docker run --rm hello-world` works without `--network=host`.
+- [`docker-compose.yml`](../docker-compose.yml) — full stack
+- [`docker-compose.dev.yml`](../docker-compose.dev.yml) — hot-reload overlay
+- [`scripts/deploy-docker.sh`](../scripts/deploy-docker.sh) — build + start helper

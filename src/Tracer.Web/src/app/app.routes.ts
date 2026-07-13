@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './core/layout/layout.component';
 import { authGuard } from './core/auth/auth.guard';
+import { permissionGuard } from './core/auth/permission.guard';
+import { Permissions } from './core/auth/permissions';
 
 export const routes: Routes = [
   // Public routes
@@ -25,11 +27,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
+        path: 'not-authorized',
+        loadComponent: () =>
+          import('./features/auth/not-authorized/not-authorized.component').then(m => m.NotAuthorizedComponent)
+      },
+      {
         path: 'assets',
+        canActivate: [permissionGuard(Permissions.Assets.View)],
         loadChildren: () => import('./features/assets/assets.routes').then(m => m.ASSETS_ROUTES)
       },
       {
         path: 'users',
+        canActivate: [permissionGuard(Permissions.Users.View)],
         loadChildren: () => import('./features/users/users.routes').then(m => m.USERS_ROUTES)
       },
       {
@@ -42,6 +51,16 @@ export const routes: Routes = [
       },
       {
         path: 'master-data',
+        canActivate: [permissionGuard(
+          Permissions.Categories.View,
+          Permissions.Locations.View,
+          Permissions.Departments.View,
+          Permissions.Manufacturers.View,
+          Permissions.Suppliers.View,
+          Permissions.StatusLabels.View,
+          Permissions.AssetModels.View,
+          Permissions.Settings.View
+        )],
         loadChildren: () => import('./features/master-data/master-data.routes').then(m => m.routes)
       },
       {

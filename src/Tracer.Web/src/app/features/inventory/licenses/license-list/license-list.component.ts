@@ -1,11 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Permissions } from '../../../../core/auth/permissions';
+import { ToastService } from '../../../../core/ui/toast.service';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { InventoryService, LicenseDto } from '../../../../core/services/inventory';
 import { LicenseFormDialogComponent } from '../license-form-dialog/license-form-dialog.component';
@@ -19,7 +19,6 @@ import { LicenseFormDialogComponent } from '../license-form-dialog/license-form-
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatSnackBarModule,
     HasPermissionDirective
   ],
   template: `
@@ -32,7 +31,7 @@ import { LicenseFormDialogComponent } from '../license-form-dialog/license-form-
       </button>
     </div>
 
-    <table mat-table [dataSource]="licenses" class="mat-elevation-z8">
+    <table mat-table [dataSource]="licenses()" class="mat-elevation-z8">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef> Name </th>
         <td mat-cell *matCellDef="let element"> {{element.name}} </td>
@@ -74,9 +73,9 @@ export class LicenseListComponent implements OnInit {
 
   private inventoryService = inject(InventoryService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
-  licenses: LicenseDto[] = [];
+  licenses = signal<LicenseDto[]>([]);
   displayedColumns: string[] = ['name', 'seats', 'cost', 'expiration'];
 
   ngOnInit() {
@@ -86,10 +85,10 @@ export class LicenseListComponent implements OnInit {
   loadLicenses() {
     this.inventoryService.getLicenses().subscribe({
       next: data => {
-        this.licenses = data;
+        this.licenses.set(data);
       },
       error: () => {
-        this.snackBar.open('Failed to load licenses', 'Close', { duration: 5000 });
+        this.toast.showError('Failed to load licenses');
       }
     });
   }
@@ -106,12 +105,12 @@ export class LicenseListComponent implements OnInit {
       }
       this.inventoryService.createLicense(result).subscribe({
         next: () => {
-          this.snackBar.open('License created successfully', 'Close', { duration: 3000 });
+          this.toast.showSuccess('License created successfully');
           this.loadLicenses();
         },
         error: err => {
           const detail = err?.error?.detail || err?.message || 'Failed to create license';
-          this.snackBar.open(`Error: ${detail}`, 'Close', { duration: 5000 });
+          this.toast.showError(`${detail}`);
         }
       });
     });

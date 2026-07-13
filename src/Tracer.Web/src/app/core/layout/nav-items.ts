@@ -4,7 +4,8 @@ export interface NavItem {
   label: string;
   route: string;
   icon: string;
-  permission?: string;
+  /** Single permission or any-of list required to show this item. */
+  permission?: string | readonly string[];
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -14,7 +15,21 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Approval Queue', route: '/requests/approvals', icon: 'rule', permission: Permissions.Requests.ViewAll },
   { label: 'Assets', route: '/assets', icon: 'devices', permission: Permissions.Assets.View },
   { label: 'Users', route: '/users', icon: 'group', permission: Permissions.Users.View },
-  { label: 'Master Data', route: '/master-data', icon: 'category', permission: Permissions.Categories.View },
+  {
+    label: 'Master Data',
+    route: '/master-data',
+    icon: 'category',
+    permission: [
+      Permissions.Categories.View,
+      Permissions.Locations.View,
+      Permissions.Departments.View,
+      Permissions.Manufacturers.View,
+      Permissions.Suppliers.View,
+      Permissions.StatusLabels.View,
+      Permissions.AssetModels.View,
+      Permissions.Settings.View,
+    ],
+  },
   { label: 'Consumables', route: '/inventory/consumables', icon: 'inventory_2', permission: Permissions.Consumables.View },
   { label: 'Components', route: '/inventory/components', icon: 'memory', permission: Permissions.Components.View },
   { label: 'Accessories', route: '/inventory/accessories', icon: 'headset', permission: Permissions.Accessories.View },

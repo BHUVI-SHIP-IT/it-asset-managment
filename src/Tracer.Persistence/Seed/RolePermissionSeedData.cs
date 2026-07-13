@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Tracer.Domain.Entities;
+using Tracer.Persistence.Contexts;
 using Tracer.Shared.Authorization;
 using AuthRoles = Tracer.Shared.Authorization.Roles;
 
@@ -8,6 +8,14 @@ namespace Tracer.Persistence.Seed;
 
 public static class RolePermissionSeedData
 {
+    /// <summary>Self-service permissions granted to the Employee role.</summary>
+    public static readonly string[] EmployeeSelfServicePermissions =
+    [
+        Permissions.Requests.Create,
+        Permissions.Requests.ViewOwn,
+        Permissions.Notifications.View
+    ];
+
     public static void SeedRolesAndPermissions(ModelBuilder builder)
     {
         var roles = new[]
@@ -70,6 +78,12 @@ public static class RolePermissionSeedData
             rolePermissions.Add(new { RoleId = 5, PermissionId = permDict[name] });
         }
 
+        // Employee (RoleId 11): self-service only — no Assets.View so org-wide dashboard stays 403.
+        foreach (var name in EmployeeSelfServicePermissions)
+        {
+            rolePermissions.Add(new { RoleId = 11, PermissionId = permDict[name] });
+        }
+
         builder.Entity<RolePermission>().HasData(rolePermissions);
 
         var defaultCompanyId = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -90,5 +104,41 @@ public static class RolePermissionSeedData
             RoleId = 1,
             IsActive = true
         });
+    }
+
+    /// <summary>
+    /// Idempotent grant of Employee self-service permissions (covers DBs created before the seed migration).
+    /// </summary>
+    public static async Task EnsureEmployeePermissionsAsync(
+        TracerDbContext db,
+        CancellationToken cancellationToken = default)
+    {
+        const int employeeRoleId = 11;
+
+        var needed = await db.Permissions
+            .AsNoTracking()
+            .Where(p => EmployeeSelfServicePermissions.Contains(p.Name))
+            .Select(p => p.Id)
+            .ToListAsync(cancellationToken);
+
+        if (needed.Count == 0)
+            return;
+
+        var existing = await db.RolePermissions
+            .Where(rp => rp.RoleId == employeeRoleId && needed.Contains(rp.PermissionId))
+            .Select(rp => rp.PermissionId)
+            .ToListAsync(cancellationToken);
+
+        foreach (var permissionId in needed.Except(existing))
+        {
+            db.RolePermissions.Add(new RolePermission
+            {
+                RoleId = employeeRoleId,
+                PermissionId = permissionId
+            });
+        }
+
+        if (db.ChangeTracker.HasChanges())
+            await db.SaveChangesAsync(cancellationToken);
     }
 }

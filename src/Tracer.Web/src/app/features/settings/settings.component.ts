@@ -1,4 +1,5 @@
 import { Permissions } from '../../core/auth/permissions';
+import { ToastService } from '../../core/ui/toast.service';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -6,7 +7,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { SettingsService, SettingDto } from './settings.service';
@@ -22,7 +22,6 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatSnackBarModule,
     MatProgressSpinnerModule,
     MatTabsModule,
     HasPermissionDirective
@@ -35,7 +34,7 @@ export class SettingsComponent implements OnInit {
 
   private fb = inject(FormBuilder);
   private settingsService = inject(SettingsService);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
   webhookForm!: FormGroup;
   smtpForm!: FormGroup;
@@ -82,7 +81,7 @@ export class SettingsComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.snackBar.open('Error loading settings', 'Close', { duration: 3000 });
+        this.toast.showError('Error loading settings');
         this.loading.set(false);
       }
     });
@@ -105,12 +104,12 @@ export class SettingsComponent implements OnInit {
         next: () => {
           completed++;
           if (completed === keys.length) {
-            this.snackBar.open('SMTP settings saved successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('SMTP settings saved successfully');
             this.submitting.set(false);
           }
         },
         error: () => {
-          this.snackBar.open(`Error saving ${key}`, 'Close', { duration: 3000 });
+          this.toast.showError(`Error saving ${key}`);
           this.submitting.set(false);
         }
       });
@@ -121,11 +120,11 @@ export class SettingsComponent implements OnInit {
     this.submitting.set(true);
     this.settingsService.upsertSetting(key, value).subscribe({
       next: () => {
-        this.snackBar.open('Setting saved successfully', 'Close', { duration: 3000 });
+        this.toast.showSuccess('Setting saved successfully');
         this.submitting.set(false);
       },
       error: () => {
-        this.snackBar.open('Error saving setting', 'Close', { duration: 3000 });
+        this.toast.showError('Error saving setting');
         this.submitting.set(false);
       }
     });

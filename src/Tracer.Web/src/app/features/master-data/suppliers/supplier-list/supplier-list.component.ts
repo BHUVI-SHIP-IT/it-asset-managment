@@ -1,4 +1,5 @@
 import { Permissions } from '../../../../core/auth/permissions';
+import { ToastService } from '../../../../core/ui/toast.service';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -8,10 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
 
 import { BaseTableComponent, PaginatedResult } from '../../../../shared/components/base-table/base-table.component';
+import { ConfirmDialogService } from '../../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { Supplier, SupplierService } from '../supplier.service';
 import { SupplierFormDialogComponent } from '../supplier-form-dialog/supplier-form-dialog.component';
@@ -28,7 +29,6 @@ import { SupplierFormDialogComponent } from '../supplier-form-dialog/supplier-fo
     MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatSnackBarModule,
     HasPermissionDirective
   ],
   templateUrl: './supplier-list.component.html',
@@ -39,7 +39,8 @@ export class SupplierListComponent extends BaseTableComponent<Supplier> implemen
 
   private supplierService = inject(SupplierService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private confirmDialog = inject(ConfirmDialogService);
+  private toast = inject(ToastService);
 
   displayedColumns = ['name', 'actions'];
 
@@ -62,11 +63,11 @@ export class SupplierListComponent extends BaseTableComponent<Supplier> implemen
       if (result) {
         this.supplierService.createSupplier(result).subscribe({
           next: () => {
-            this.snackBar.open('Supplier created successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Supplier created successfully');
             this.loadData();
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to create supplier'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${err.message || 'Failed to create supplier'}`);
           }
         });
       }
@@ -83,11 +84,11 @@ export class SupplierListComponent extends BaseTableComponent<Supplier> implemen
       if (result) {
         this.supplierService.updateSupplier(supplier.id, { ...result, id: supplier.id }).subscribe({
           next: () => {
-            this.snackBar.open('Supplier updated successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Supplier updated successfully');
             this.loadData();
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to update supplier'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${err.message || 'Failed to update supplier'}`);
           }
         });
       }
@@ -95,16 +96,25 @@ export class SupplierListComponent extends BaseTableComponent<Supplier> implemen
   }
 
   deleteSupplier(supplier: Supplier): void {
-    if (confirm(`Are you sure you want to delete the supplier '${supplier.name}'?`)) {
-      this.supplierService.deleteSupplier(supplier.id).subscribe({
-        next: () => {
-          this.snackBar.open('Supplier deleted successfully', 'Close', { duration: 3000 });
-          this.loadData();
-        },
-        error: (err) => {
-          this.snackBar.open(`Error: ${err.message || 'Failed to delete supplier'}`, 'Close', { duration: 5000 });
+    this.confirmDialog
+      .open({
+        title: 'Delete supplier',
+        message: `Are you sure you want to delete the supplier '${supplier.name}'?`,
+        confirmText: 'Delete'
+      })
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
         }
+        this.supplierService.deleteSupplier(supplier.id).subscribe({
+          next: () => {
+            this.toast.showSuccess('Supplier deleted successfully');
+            this.loadData();
+          },
+          error: (err) => {
+            this.toast.showError(`${err.message || 'Failed to delete supplier'}`);
+          }
+        });
       });
-    }
   }
 }

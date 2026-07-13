@@ -1,4 +1,5 @@
 import { Permissions } from '../../../../core/auth/permissions';
+import { ToastService } from '../../../../core/ui/toast.service';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -8,10 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
 
 import { BaseTableComponent, PaginatedResult } from '../../../../shared/components/base-table/base-table.component';
+import { ConfirmDialogService } from '../../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { StatusLabel, StatusLabelService } from '../status-label.service';
 import { StatusLabelFormDialogComponent } from '../status-label-form-dialog/status-label-form-dialog.component';
@@ -28,7 +29,6 @@ import { StatusLabelFormDialogComponent } from '../status-label-form-dialog/stat
     MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatSnackBarModule,
     HasPermissionDirective
   ],
   templateUrl: './status-label-list.component.html',
@@ -39,7 +39,8 @@ export class StatusLabelListComponent extends BaseTableComponent<StatusLabel> im
 
   private statusLabelService = inject(StatusLabelService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private confirmDialog = inject(ConfirmDialogService);
+  private toast = inject(ToastService);
 
   displayedColumns = ['name', 'isDeployable', 'isPending', 'isArchived', 'actions'];
 
@@ -62,11 +63,11 @@ export class StatusLabelListComponent extends BaseTableComponent<StatusLabel> im
       if (result) {
         this.statusLabelService.createStatusLabel(result).subscribe({
           next: () => {
-            this.snackBar.open('Status label created successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Status label created successfully');
             this.loadData();
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to create status label'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${err.message || 'Failed to create status label'}`);
           }
         });
       }
@@ -83,11 +84,11 @@ export class StatusLabelListComponent extends BaseTableComponent<StatusLabel> im
       if (result) {
         this.statusLabelService.updateStatusLabel(statusLabel.id, { ...result, id: statusLabel.id }).subscribe({
           next: () => {
-            this.snackBar.open('Status label updated successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Status label updated successfully');
             this.loadData();
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${err.message || 'Failed to update status label'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${err.message || 'Failed to update status label'}`);
           }
         });
       }
@@ -95,16 +96,25 @@ export class StatusLabelListComponent extends BaseTableComponent<StatusLabel> im
   }
 
   deleteStatusLabel(statusLabel: StatusLabel): void {
-    if (confirm(`Are you sure you want to delete the status label '${statusLabel.name}'?`)) {
-      this.statusLabelService.deleteStatusLabel(statusLabel.id).subscribe({
-        next: () => {
-          this.snackBar.open('Status label deleted successfully', 'Close', { duration: 3000 });
-          this.loadData();
-        },
-        error: (err) => {
-          this.snackBar.open(`Error: ${err.message || 'Failed to delete status label'}`, 'Close', { duration: 5000 });
+    this.confirmDialog
+      .open({
+        title: 'Delete status label',
+        message: `Are you sure you want to delete the status label '${statusLabel.name}'?`,
+        confirmText: 'Delete'
+      })
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
         }
+        this.statusLabelService.deleteStatusLabel(statusLabel.id).subscribe({
+          next: () => {
+            this.toast.showSuccess('Status label deleted successfully');
+            this.loadData();
+          },
+          error: (err) => {
+            this.toast.showError(`${err.message || 'Failed to delete status label'}`);
+          }
+        });
       });
-    }
   }
 }

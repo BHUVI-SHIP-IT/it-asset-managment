@@ -36,4 +36,24 @@ body {
   margin: 0;
   height: 100%;
 }
-/* You can add global styles to this file, and also import other style files */
+
+/* Themed snackbars used by NotificationService (panelClass). */
+.notification-snackbar {
+  --mat-snack-bar-button-color: #ffffff;
+
+  &.notification-success {
+    --mdc-snackbar-container-color: #2e7d32;
+    --mdc-snackbar-supporting-text-color: #ffffff;
+  }
+
+  &.notification-error {
+    --mdc-snackbar-container-color: #c62828;
+    --mdc-snackbar-supporting-text-color: #ffffff;
+  }
+
+  &.notification-info {
+    --mdc-snackbar-container-color: #1565c0;
+    --mdc-snackbar-supporting-text-color: #ffffff;
+  }
+}
+

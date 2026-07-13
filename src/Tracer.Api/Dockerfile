@@ -18,6 +18,16 @@ COPY src/ .
 WORKDIR /src/Tracer.Api
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
+# ── Watch Stage (Compose hot-reload overlay) ──
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS watch
+WORKDIR /src
+RUN apk add --no-cache icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
+EXPOSE 8080
+# Source is bind-mounted at runtime from docker-compose.dev.yml
+CMD ["dotnet", "watch", "run", "--project", "Tracer.Api/Tracer.Api.csproj", "--urls", "http://0.0.0.0:8080", "--no-launch-profile"]
+
 # ── Runtime Stage ──
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS final
 WORKDIR /app
@@ -25,7 +35,6 @@ EXPOSE 8080
 
 RUN apk add --no-cache icu-libs wget
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-
 
 # Non-root user for security (Doc 11 §8.2).
 USER $APP_UID

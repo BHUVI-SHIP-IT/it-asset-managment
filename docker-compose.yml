@@ -1,3 +1,8 @@
+# Tracer stack — Docker Compose only (bridge network, service-name DNS).
+# Usage:
+#   docker compose up -d --build          # production-like images
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build   # hot-reload
+
 services:
   tracer-api:
     build:
@@ -7,19 +12,27 @@ services:
       - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - RUN_MIGRATIONS=true
       - ConnectionStrings__DefaultConnection=Server=sql-server;Database=TracerDb;User Id=sa;Password=Your_Password123;TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
       - Serilog__WriteTo__0__Args__configure__0__Args__serverUrl=http://seq:5341
+      - Cors__Origins__0=http://localhost:4200
+      - Cors__Origins__1=http://tracer-web
+      - Cors__Origins__2=http://127.0.0.1:4200
     depends_on:
       sql-server:
         condition: service_healthy
       redis:
         condition: service_started
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health/live || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/health/live || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 8
+      start_period: 40s
+    networks:
+      - tracer-net
     deploy:
       resources:
         limits:
@@ -42,6 +55,8 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+    networks:
+      - tracer-net
 
   redis:
     image: redis:alpine
@@ -49,37 +64,49 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    networks:
+      - tracer-net
 
   seq:
     image: datalust/seq:latest
     ports:
-      - "5341:5341"  # Seq ingestion port
-      - "8081:80"    # Seq UI — visit http://localhost:8081
+      - "5341:5341"
+      - "8081:80"
     environment:
       - ACCEPT_EULA=Y
     volumes:
       - seq-data:/data
+    networks:
+      - tracer-net
 
   tracer-web:
-      build:
-        context: src/Tracer.Web
-        dockerfile: Dockerfile
-      ports:
-        - "4200:80"
-      depends_on:
-        tracer-api:
-          condition: service_healthy
-      healthcheck:
-        test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
-      deploy:
-        resources:
-          limits:
-            memory: 128m
-          reservations:
-            memory: 64m
+    build:
+      context: src/Tracer.Web
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      tracer-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - tracer-net
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+        reservations:
+          memory: 64m
+
+networks:
+  tracer-net:
+    driver: bridge
+
 volumes:
   sql-data:
   redis-data:

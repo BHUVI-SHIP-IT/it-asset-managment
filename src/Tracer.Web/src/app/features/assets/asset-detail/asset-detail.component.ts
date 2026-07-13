@@ -1,4 +1,5 @@
 import { Permissions } from '../../../core/auth/permissions';
+import { ToastService } from '../../../core/ui/toast.service';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -7,7 +8,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { AssetDetailDto, AssetHistoryDto, AssetService } from '../asset.service';
@@ -26,7 +26,6 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
     MatDialogModule,
     MatTableModule,
     HasPermissionDirective
@@ -39,7 +38,7 @@ export class AssetDetailComponent implements OnInit {
 
   private route = inject(ActivatedRoute);
   private assetService = inject(AssetService);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
   private dialog = inject(MatDialog);
 
   asset = signal<AssetDetailDto | null>(null);
@@ -66,7 +65,7 @@ export class AssetDetailComponent implements OnInit {
         this.loadHistory(id);
       },
       error: () => {
-        this.snackBar.open('Error loading asset', 'Close', { duration: 5000 });
+        this.toast.showError('Error loading asset');
         this.loading.set(false);
       }
     });
@@ -106,13 +105,9 @@ export class AssetDetailComponent implements OnInit {
     if (!currentAsset) return;
 
     if (!this.canCheckOut(currentAsset)) {
-      this.snackBar.open(
-        this.isCheckedOut(currentAsset)
+      this.toast.showError(this.isCheckedOut(currentAsset)
           ? 'This asset is already checked out. Check it in first.'
-          : 'This asset cannot be checked out in its current status.',
-        'Close',
-        { duration: 5000 }
-      );
+          : 'This asset cannot be checked out in its current status.');
       return;
     }
 
@@ -125,11 +120,11 @@ export class AssetDetailComponent implements OnInit {
       if (result && result.userId) {
         this.assetService.checkoutAsset(currentAsset.id, { assetId: currentAsset.id, userId: result.userId }).subscribe({
           next: () => {
-            this.snackBar.open('Asset checked out successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Asset checked out successfully');
             this.loadAsset(currentAsset.id);
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${this.apiErrorDetail(err) || 'Failed to checkout asset'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${this.apiErrorDetail(err) || 'Failed to checkout asset'}`);
           }
         });
       }
@@ -141,7 +136,7 @@ export class AssetDetailComponent implements OnInit {
     if (!currentAsset) return;
 
     if (!this.isCheckedOut(currentAsset)) {
-      this.snackBar.open('This asset is not currently assigned.', 'Close', { duration: 5000 });
+      this.toast.showError('This asset is not currently assigned.');
       return;
     }
 
@@ -155,17 +150,17 @@ export class AssetDetailComponent implements OnInit {
         // Re-read in case the signal changed while the dialog was open.
         const latest = this.asset();
         if (!latest || !this.isCheckedOut(latest)) {
-          this.snackBar.open('This asset is not currently assigned.', 'Close', { duration: 5000 });
+          this.toast.showError('This asset is not currently assigned.');
           return;
         }
 
         this.assetService.checkinAsset(latest.id, { assetId: latest.id }).subscribe({
           next: () => {
-            this.snackBar.open('Asset checked in successfully', 'Close', { duration: 3000 });
+            this.toast.showSuccess('Asset checked in successfully');
             this.loadAsset(latest.id);
           },
           error: (err) => {
-            this.snackBar.open(`Error: ${this.apiErrorDetail(err) || 'Failed to checkin asset'}`, 'Close', { duration: 5000 });
+            this.toast.showError(`${this.apiErrorDetail(err) || 'Failed to checkin asset'}`);
           }
         });
       }

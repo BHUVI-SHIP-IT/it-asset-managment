@@ -3,7 +3,7 @@
 Living contract between Angular (`Tracer.Web`), .NET API (`Tracer.Api`), and SQL Server schema.
 Update this file when routes, DTOs, or tables change.
 
-**Base URL:** `/api/v1` (dev proxy → `http://localhost:5001`)  
+**Base URL:** `/api/v1` (browser → same origin via nginx/`proxy.docker.json` → Compose service `tracer-api:8080`)  
 **Auth:** `Authorization: Bearer <accessToken>` on all endpoints except login/refresh  
 **JSON enums (request bodies):** camelCase via `JsonStringEnumConverter` (e.g. `"text"`, `"deployable"`)  
 **Note:** Some list DTO string fields use `.ToString()` and return PascalCase (e.g. asset `status`: `"Deployable"`).
@@ -33,13 +33,17 @@ Update this file when routes, DTOs, or tables change.
 
 | Method | Path | Request | Response |
 |--------|------|---------|----------|
-| GET | `/dashboard/metrics` | — | `{ totalAssets, activeAssets, pendingCheckouts, overdueCheckins }` |
+| GET | `/dashboard/metrics` | — | `{ totalAssets, activeAssets, pendingCheckouts, overdueCheckins, pendingApprovals }` |
+| GET | `/me/summary` | — | `{ assignedCounts, requestCounts, attentionItems[] }` |
 
 - `activeAssets` = `Status == Deployed`
 - `pendingCheckouts` = `Status == Pending`
-- `overdueCheckins` = Deployed with `CheckedOutAtUtc` older than 90 days  
-**Auth:** `Assets.View`  
-**DB:** `Assets`
+- `overdueCheckins` = Deployed with `CheckedOutAtUtc` older than 90 days
+- `pendingApprovals` = inventory requests with `Status == Pending` (org-wide)
+- `/dashboard/metrics` **Auth:** `Assets.View` (non-admin tokens → **403**)
+- `/me/summary` **Auth:** any authenticated user; scoped strictly to JWT `sub` (never a query param)
+- `attentionItems`: licenses expiring/expired within 30 days; assets approaching/past 90-day return window  
+**DB:** `Assets`, `Consumables`, `Components`, `Accessories`, `LicenseSeats`, `SoftwareLicenses`, `InventoryRequests`
 
 ---
 

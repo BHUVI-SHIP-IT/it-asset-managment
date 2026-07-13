@@ -6,8 +6,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
+import { ToastService } from '../../../core/ui/toast.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { Permissions } from '../../../core/auth/permissions';
 import {
   AssignedItemDto,
   UserAssignedItemsDto,
@@ -26,7 +28,6 @@ import {
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
     MatTableModule
   ],
   templateUrl: './user-detail.component.html',
@@ -35,7 +36,8 @@ import {
 export class UserDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private userService = inject(UserService);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
+  private auth = inject(AuthService);
 
   user = signal<UserDto | null>(null);
   assignedItems = signal<UserAssignedItemsDto | null>(null);
@@ -61,7 +63,7 @@ export class UserDetailComponent implements OnInit {
         this.loadAssignedItems(id);
       },
       error: () => {
-        this.snackBar.open('Error loading user', 'Close', { duration: 5000 });
+        this.toast.showError('Error loading user');
         this.loading.set(false);
       }
     });
@@ -102,5 +104,13 @@ export class UserDetailComponent implements OnInit {
       default:
         return [];
     }
+  }
+
+  canOpenDetail(row: AssignedItemDto): boolean {
+    if (!row.detailPath) return false;
+    if (row.detailPath.startsWith('/assets/')) {
+      return this.auth.hasPermission(Permissions.Assets.View);
+    }
+    return true;
   }
 }

@@ -1,12 +1,12 @@
-import { Component, inject } from '@angular/core';
-import { RouterOutlet, RouterModule } from '@angular/router';
+import { Component, computed, inject } from '@angular/core';
+import { Router, RouterOutlet, RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../auth/auth.service';
-import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { satisfiesAnyPermission } from '../auth/permissions';
 import { AlertsComponent } from '../notifications/alerts.component';
 import { NAV_ITEMS } from './nav-items';
 
@@ -14,14 +14,13 @@ import { NAV_ITEMS } from './nav-items';
   selector: 'app-layout',
   standalone: true,
   imports: [
-    RouterOutlet, 
+    RouterOutlet,
     RouterModule,
-    MatSidenavModule, 
-    MatToolbarModule, 
-    MatListModule, 
-    MatIconModule, 
+    MatSidenavModule,
+    MatToolbarModule,
+    MatListModule,
+    MatIconModule,
     MatButtonModule,
-    HasPermissionDirective,
     AlertsComponent
   ],
   templateUrl: './layout.component.html',
@@ -29,9 +28,20 @@ import { NAV_ITEMS } from './nav-items';
 })
 export class LayoutComponent {
   authService = inject(AuthService);
-  navItems = NAV_ITEMS;
+  private router = inject(Router);
+
+  /** Only nav items the current user is allowed to open. */
+  navItems = computed(() => {
+    const perms = this.authService.permissions();
+    return NAV_ITEMS.filter(
+      item => !item.permission || satisfiesAnyPermission(perms, item.permission)
+    );
+  });
 
   logout() {
     this.authService.logout();
+    // Click handlers run inside NgZone — navigate here so the layout shell
+    // unmounts immediately (auth guard does not re-run on signal clear alone).
+    void this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }

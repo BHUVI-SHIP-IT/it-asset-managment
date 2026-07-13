@@ -7,6 +7,28 @@ export interface DashboardMetricsDto {
   activeAssets: number;
   pendingCheckouts: number;
   overdueCheckins: number;
+  pendingApprovals: number;
+}
+
+export interface UserDashboardSummaryDto {
+  assignedCounts: {
+    assets: number;
+    consumables: number;
+    components: number;
+    licenses: number;
+    accessories: number;
+  };
+  requestCounts: {
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
+  attentionItems: Array<{
+    kind: string;
+    title: string;
+    detail: string;
+    dueAtUtc: string | null;
+  }>;
 }
 
 @Injectable({
@@ -14,9 +36,14 @@ export interface DashboardMetricsDto {
 })
 export class DashboardService {
   private http = inject(HttpClient);
-  private baseUrl = '/api/v1/dashboard';
 
+  /** Org-wide metrics — requires Assets.View (admin). Do not call for end users. */
   getMetrics(): Observable<DashboardMetricsDto> {
-    return this.http.get<DashboardMetricsDto>(`${this.baseUrl}/metrics`);
+    return this.http.get<DashboardMetricsDto>('/api/v1/dashboard/metrics');
+  }
+
+  /** Authenticated-user summary only — never hits admin/org endpoints. */
+  getMySummary(): Observable<UserDashboardSummaryDto> {
+    return this.http.get<UserDashboardSummaryDto>('/api/v1/me/summary');
   }
 }

@@ -1,4 +1,5 @@
 import { Permissions } from '../../../core/auth/permissions';
+import { ToastService } from '../../../core/ui/toast.service';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
@@ -10,7 +11,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -19,6 +19,7 @@ import { Observable } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { BaseTableComponent, PaginatedResult } from '../../../shared/components/base-table/base-table.component';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { AssetDto, AssetService } from '../asset.service';
 
@@ -36,7 +37,6 @@ import { AssetDto, AssetService } from '../asset.service';
     MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatSnackBarModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -50,7 +50,8 @@ export class AssetListComponent extends BaseTableComponent<AssetDto> implements 
 
   private assetService = inject(AssetService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
+  private confirmDialog = inject(ConfirmDialogService);
+  private toast = inject(ToastService);
   private fb = inject(FormBuilder);
   displayedColumns = ['assetTag', 'name', 'status', 'purchaseCost', 'actions'];
 
@@ -109,16 +110,25 @@ export class AssetListComponent extends BaseTableComponent<AssetDto> implements 
   }
 
   deleteAsset(asset: AssetDto): void {
-    if (confirm(`Are you sure you want to delete asset '${asset.assetTag}'?`)) {
-      this.assetService.deleteAsset(asset.id).subscribe({
-        next: () => {
-          this.snackBar.open('Asset deleted successfully', 'Close', { duration: 3000 });
-          this.loadData();
-        },
-        error: (err) => {
-          this.snackBar.open(`Error: ${err.message || 'Failed to delete asset'}`, 'Close', { duration: 5000 });
+    this.confirmDialog
+      .open({
+        title: 'Delete asset',
+        message: `Are you sure you want to delete asset '${asset.assetTag}'?`,
+        confirmText: 'Delete'
+      })
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
         }
+        this.assetService.deleteAsset(asset.id).subscribe({
+          next: () => {
+            this.toast.showSuccess('Asset deleted successfully');
+            this.loadData();
+          },
+          error: (err) => {
+            this.toast.showError(`${err.message || 'Failed to delete asset'}`);
+          }
+        });
       });
-    }
   }
 }

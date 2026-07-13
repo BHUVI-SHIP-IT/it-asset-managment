@@ -10,8 +10,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Permissions } from '../../../core/auth/permissions';
+import { ToastService } from '../../../core/ui/toast.service';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import {
   RequestCatalogItemDto,
@@ -34,7 +34,6 @@ import {
     MatInputModule,
     MatTableModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
     HasPermissionDirective
   ],
   templateUrl: './my-requests.component.html',
@@ -43,7 +42,7 @@ import {
 export class MyRequestsComponent implements OnInit {
   readonly permissions = Permissions;
   private requestService = inject(RequestService);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
   private fb = inject(FormBuilder);
 
   loading = signal(true);
@@ -84,7 +83,7 @@ export class MyRequestsComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.snackBar.open('Failed to load requests', 'Close', { duration: 4000 });
+        this.toast.showError('Failed to load requests');
         this.loading.set(false);
       }
     });
@@ -112,14 +111,14 @@ export class MyRequestsComponent implements OnInit {
       notes: value.notes || null
     }).subscribe({
       next: () => {
-        this.snackBar.open('Request submitted', 'Close', { duration: 3000 });
+        this.toast.showSuccess('Request submitted');
         this.submitting.set(false);
         this.form.patchValue({ itemId: '', notes: '', quantity: 1 });
         this.loadMine();
       },
       error: err => {
         const detail = err?.error?.detail || 'Failed to submit request';
-        this.snackBar.open(detail, 'Close', { duration: 5000 });
+        this.toast.showError(detail);
         this.submitting.set(false);
       }
     });
