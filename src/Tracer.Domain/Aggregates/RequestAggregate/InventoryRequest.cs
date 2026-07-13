@@ -8,7 +8,8 @@ public enum RequestType
     Consumable = 1,
     Component = 2,
     Accessory = 3,
-    LicenseRenewal = 4
+    LicenseRenewal = 4,
+    Return = 5
 }
 
 public enum RequestStatus

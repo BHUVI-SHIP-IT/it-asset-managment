@@ -37,4 +37,35 @@ public sealed class LicensesController : ControllerBase
         var id = await _sender.Send(command, cancellationToken);
         return Ok(id);
     }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Policy = Permissions.Licenses.Update)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLicenseBody body, CancellationToken cancellationToken)
+    {
+        await _sender.Send(new UpdateLicenseCommand(
+            id,
+            body.Name,
+            body.ManufacturerId,
+            body.TotalSeats,
+            body.PurchaseCost,
+            body.ExpirationDate,
+            body.Notes), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize(Policy = Permissions.Licenses.Delete)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        await _sender.Send(new DeleteLicenseCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    public sealed record UpdateLicenseBody(
+        string Name,
+        Guid? ManufacturerId,
+        int TotalSeats,
+        decimal PurchaseCost,
+        DateTime? ExpirationDate,
+        string? Notes);
 }

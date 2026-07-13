@@ -4,8 +4,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Permissions } from '../../../../core/auth/permissions';
 import { ToastService } from '../../../../core/ui/toast.service';
+import { ConfirmDialogService } from '../../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { InventoryService, ConsumableDto } from '../../../../core/services/inventory';
 import { ConsumableFormDialogComponent } from '../consumable-form-dialog/consumable-form-dialog.component';
@@ -19,6 +21,7 @@ import { ConsumableFormDialogComponent } from '../consumable-form-dialog/consuma
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
+    MatTooltipModule,
     HasPermissionDirective
   ],
   template: `
@@ -52,6 +55,24 @@ import { ConsumableFormDialogComponent } from '../consumable-form-dialog/consuma
         <td mat-cell *matCellDef="let element"> {{element.purchaseCost | currency}} </td>
       </ng-container>
 
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="action-column"> Actions </th>
+        <td mat-cell *matCellDef="let element" class="action-column">
+          <button mat-icon-button color="primary" type="button"
+                  *hasPermission="permissions.Consumables.Update"
+                  (click)="openEditDialog(element)"
+                  matTooltip="Edit" aria-label="Edit">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" type="button"
+                  *hasPermission="permissions.Consumables.Delete"
+                  (click)="deleteConsumable(element)"
+                  matTooltip="Delete" aria-label="Delete">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
@@ -66,6 +87,13 @@ import { ConsumableFormDialogComponent } from '../consumable-form-dialog/consuma
     table {
       width: 100%;
     }
+    .action-column {
+      width: 120px;
+      text-align: right;
+      overflow: visible;
+      text-overflow: clip;
+      white-space: nowrap;
+    }
   `]
 })
 export class ConsumableListComponent implements OnInit {
@@ -73,10 +101,11 @@ export class ConsumableListComponent implements OnInit {
 
   private inventoryService = inject(InventoryService);
   private dialog = inject(MatDialog);
+  private confirmDialog = inject(ConfirmDialogService);
   private toast = inject(ToastService);
 
   consumables = signal<ConsumableDto[]>([]);
-  displayedColumns: string[] = ['id', 'name', 'quantity', 'cost'];
+  displayedColumns: string[] = ['id', 'name', 'quantity', 'cost', 'actions'];
 
   ngOnInit() {
     this.loadConsumables();
@@ -114,5 +143,52 @@ export class ConsumableListComponent implements OnInit {
         }
       });
     });
+  }
+
+  openEditDialog(consumable: ConsumableDto): void {
+    const dialogRef = this.dialog.open(ConsumableFormDialogComponent, {
+      width: '480px',
+      data: { consumable }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+      this.inventoryService.updateConsumable(consumable.id, result).subscribe({
+        next: () => {
+          this.toast.showSuccess('Consumable updated successfully');
+          this.loadConsumables();
+        },
+        error: err => {
+          const detail = err?.error?.detail || err?.message || 'Failed to update consumable';
+          this.toast.showError(`${detail}`);
+        }
+      });
+    });
+  }
+
+  deleteConsumable(consumable: ConsumableDto): void {
+    this.confirmDialog
+      .open({
+        title: 'Delete consumable',
+        message: `Are you sure you want to delete the consumable '${consumable.name}'?`,
+        confirmText: 'Delete'
+      })
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
+        }
+        this.inventoryService.deleteConsumable(consumable.id).subscribe({
+          next: () => {
+            this.toast.showSuccess('Consumable deleted successfully');
+            this.loadConsumables();
+          },
+          error: err => {
+            const detail = err?.error?.detail || err?.message || 'Failed to delete consumable';
+            this.toast.showError(`${detail}`);
+          }
+        });
+      });
   }
 }

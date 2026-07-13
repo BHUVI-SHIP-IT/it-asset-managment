@@ -19,7 +19,7 @@ import { ConsumableDto } from '../../../../core/services/inventory';
     MatButtonModule
   ],
   template: `
-    <h2 mat-dialog-title>Create Consumable</h2>
+    <h2 mat-dialog-title>{{ isEditMode ? 'Edit Consumable' : 'Create Consumable' }}</h2>
     <mat-dialog-content>
       <form [formGroup]="form" class="form-container">
         <mat-form-field appearance="fill" class="full-width">
@@ -43,7 +43,9 @@ import { ConsumableDto } from '../../../../core/services/inventory';
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button type="button" (click)="onCancel()">Cancel</button>
-      <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">Create</button>
+      <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">
+        {{ isEditMode ? 'Update' : 'Create' }}
+      </button>
     </mat-dialog-actions>
   `,
   styles: [`
@@ -53,12 +55,14 @@ import { ConsumableDto } from '../../../../core/services/inventory';
 })
 export class ConsumableFormDialogComponent {
   form: FormGroup;
+  isEditMode: boolean;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ConsumableFormDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { consumable?: ConsumableDto }
   ) {
+    this.isEditMode = !!data.consumable;
     this.form = this.fb.group({
       name: [data.consumable?.name || '', Validators.required],
       totalQuantity: [data.consumable?.totalQuantity ?? 0, [Validators.required, Validators.min(0)]],

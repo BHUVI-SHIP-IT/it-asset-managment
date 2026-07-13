@@ -1,12 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 import { DashboardService } from './dashboard.service';
-import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
-import { Permissions } from '../../core/auth/permissions';
 
 interface StatCard {
   icon: string;
@@ -21,11 +17,8 @@ interface StatCard {
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule,
     MatCardModule,
     MatIconModule,
-    MatButtonModule,
-    HasPermissionDirective,
   ],
   template: `
     <div class="dashboard">
@@ -49,24 +42,6 @@ interface StatCard {
             </mat-card-content>
           </mat-card>
         }
-      </div>
-
-      <div class="quick-links">
-        <h2>Quick Actions</h2>
-        <div class="links-grid">
-          <a mat-raised-button routerLink="/assets/new" color="primary" *hasPermission="permissions.Assets.Create">
-            <mat-icon>add_box</mat-icon> Create Asset
-          </a>
-          <a mat-stroked-button routerLink="/requests/approvals" *hasPermission="permissions.Requests.ViewAll">
-            <mat-icon>rule</mat-icon> View All Requests
-          </a>
-          <a mat-stroked-button routerLink="/users" *hasPermission="permissions.Users.View">
-            <mat-icon>group</mat-icon> Manage Users
-          </a>
-          <a mat-stroked-button routerLink="/financials/reports" *hasPermission="permissions.Reports.View">
-            <mat-icon>assessment</mat-icon> Reports
-          </a>
-        </div>
       </div>
     </div>
   `,
@@ -109,14 +84,10 @@ interface StatCard {
     .stat-value { font-size: 28px; font-weight: 700; line-height: 1; }
     .stat-label { font-size: 13px; color: var(--mat-sys-on-surface-variant); margin-top: 4px; }
     .stat-trend { font-size: 11px; color: #4caf50; margin-top: 2px; }
-    h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
-    .links-grid { display: flex; gap: 12px; flex-wrap: wrap; }
-    .links-grid a { display: flex; align-items: center; gap: 8px; }
   `]
 })
 export class AdminDashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
-  readonly permissions = Permissions;
 
   stats = signal<StatCard[]>([
     { icon: 'devices', label: 'Total Assets', value: '—', trend: 'Loading...', color: 'blue' },

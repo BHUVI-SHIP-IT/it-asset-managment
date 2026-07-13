@@ -36,4 +36,7 @@ table {
 .action-column {
   width: 120px;
   text-align: right;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
 }

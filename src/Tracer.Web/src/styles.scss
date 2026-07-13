@@ -37,7 +37,40 @@ body {
   height: 100%;
 }
 
-/* Themed snackbars used by NotificationService (panelClass). */
+/*
+ * MDC data-table cells use overflow:hidden + text-overflow:ellipsis.
+ * Action columns hold icon buttons whose Material Icons ligatures are still
+ * text nodes — a squeezed cell clips "delete" into literal "...". Override
+ * that ellipsis on every actions column and keep mat-icon glyphs unclipped.
+ */
+.mat-mdc-cell.mat-column-actions,
+.mat-mdc-header-cell.mat-column-actions,
+.mat-mdc-cell.action-column,
+.mat-mdc-header-cell.action-column,
+.mat-mdc-cell.actions-cell,
+.mat-mdc-header-cell.actions-cell {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  width: 1%;
+}
+
+.mat-column-actions .mat-mdc-icon-button,
+.action-column .mat-mdc-icon-button,
+.actions-cell .mat-mdc-icon-button {
+  vertical-align: middle;
+}
+
+.mat-mdc-icon-button .mat-icon,
+.mat-icon {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  font-family: 'Material Icons', sans-serif;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+}
+
+/* Themed snackbars used by ToastService (panelClass). */
 .notification-snackbar {
   --mat-snack-bar-button-color: #ffffff;
 

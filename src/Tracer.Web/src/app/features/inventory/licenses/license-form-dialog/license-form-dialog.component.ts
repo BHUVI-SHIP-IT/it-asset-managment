@@ -19,7 +19,7 @@ import { LicenseDto } from '../../../../core/services/inventory';
     MatButtonModule
   ],
   template: `
-    <h2 mat-dialog-title>Create License</h2>
+    <h2 mat-dialog-title>{{ isEditMode ? 'Edit License' : 'Create License' }}</h2>
     <mat-dialog-content>
       <form [formGroup]="form" class="form-container">
         <mat-form-field appearance="fill" class="full-width">
@@ -53,7 +53,9 @@ import { LicenseDto } from '../../../../core/services/inventory';
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button type="button" (click)="onCancel()">Cancel</button>
-      <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">Create</button>
+      <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">
+        {{ isEditMode ? 'Update' : 'Create' }}
+      </button>
     </mat-dialog-actions>
   `,
   styles: [`
@@ -63,12 +65,14 @@ import { LicenseDto } from '../../../../core/services/inventory';
 })
 export class LicenseFormDialogComponent {
   form: FormGroup;
+  isEditMode: boolean;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<LicenseFormDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { license?: LicenseDto }
   ) {
+    this.isEditMode = !!data.license;
     const exp = data.license?.expirationDate
       ? data.license.expirationDate.substring(0, 10)
       : '';
@@ -90,7 +94,7 @@ export class LicenseFormDialogComponent {
       name: value.name,
       totalSeats: value.totalSeats,
       purchaseCost: value.purchaseCost,
-      manufacturerId: null,
+      manufacturerId: this.data.license?.manufacturerId ?? null,
       expirationDate: value.expirationDate ? new Date(value.expirationDate).toISOString() : null,
       notes: value.notes || null
     });

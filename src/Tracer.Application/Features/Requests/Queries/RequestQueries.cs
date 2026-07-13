@@ -180,6 +180,9 @@ internal static class RequestDtoMapper
         if (string.IsNullOrWhiteSpace(r.ItemId))
             return null;
 
+        if (r.Type == RequestType.Return)
+            return await ResolveReturnItemNameAsync(db, r.ItemId, ct);
+
         return r.Type switch
         {
             RequestType.Asset when Guid.TryParse(r.ItemId, out var assetId) =>
@@ -193,6 +196,30 @@ internal static class RequestDtoMapper
             RequestType.LicenseRenewal when Guid.TryParse(r.ItemId, out var lId) =>
                 await db.SoftwareLicenses.AsNoTracking().Where(l => l.Id == lId).Select(l => l.Name).FirstOrDefaultAsync(ct),
             _ => null
+        };
+    }
+
+    private static async Task<string?> ResolveReturnItemNameAsync(
+        IApplicationDbContext db, string itemId, CancellationToken ct)
+    {
+        var sep = itemId.IndexOf(':');
+        if (sep <= 0 || sep >= itemId.Length - 1)
+            return itemId;
+
+        var kind = itemId[..sep];
+        var rawId = itemId[(sep + 1)..];
+
+        return kind.ToLowerInvariant() switch
+        {
+            "asset" when Guid.TryParse(rawId, out var assetId) =>
+                await db.Assets.AsNoTracking().Where(a => a.Id == assetId).Select(a => a.Name).FirstOrDefaultAsync(ct),
+            "consumable" when int.TryParse(rawId, out var cId) =>
+                await db.Consumables.AsNoTracking().Where(c => c.Id == cId).Select(c => c.Name).FirstOrDefaultAsync(ct),
+            "component" when int.TryParse(rawId, out var pId) =>
+                await db.Components.AsNoTracking().Where(c => c.Id == pId).Select(c => c.Name).FirstOrDefaultAsync(ct),
+            "accessory" when int.TryParse(rawId, out var aId) =>
+                await db.Accessories.AsNoTracking().Where(a => a.Id == aId).Select(a => a.Name).FirstOrDefaultAsync(ct),
+            _ => itemId
         };
     }
 }

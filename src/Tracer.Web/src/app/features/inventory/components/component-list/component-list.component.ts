@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Observable } from 'rxjs';
 
 import { BaseTableComponent, PaginatedResult } from '../../../../shared/components/base-table/base-table.component';
@@ -29,6 +30,7 @@ import { ComponentFormDialogComponent } from '../component-form-dialog/component
     MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule,
+    MatTooltipModule,
     HasPermissionDirective
   ],
   templateUrl: './component-list.component.html',

@@ -30,6 +30,7 @@ export interface CreateRequestCommand {
   itemId: string;
   quantity?: number | null;
   notes?: string | null;
+  itemKind?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

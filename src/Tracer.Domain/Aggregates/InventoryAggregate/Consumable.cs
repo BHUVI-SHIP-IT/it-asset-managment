@@ -62,6 +62,30 @@ public sealed class Consumable : AuditableEntity<int>
         TotalQuantity -= quantity;
     }
 
+    public void Update(string name, int totalQuantity, decimal purchaseCost, int? reorderThreshold = null)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+        if (totalQuantity < 0)
+            throw new ArgumentException("Quantity cannot be negative.", nameof(totalQuantity));
+        if (purchaseCost < 0)
+            throw new ArgumentException("Purchase cost cannot be negative.", nameof(purchaseCost));
+        if (reorderThreshold is < 0)
+            throw new ArgumentException("Reorder threshold cannot be negative.", nameof(reorderThreshold));
+
+        Name = name.Trim();
+        TotalQuantity = totalQuantity;
+        PurchaseCost = purchaseCost;
+        if (reorderThreshold.HasValue)
+            ReorderThreshold = reorderThreshold.Value;
+    }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
+    }
+
     public void AssignTo(Guid userId, int quantity)
     {
         if (userId == Guid.Empty)
@@ -70,5 +94,17 @@ public sealed class Consumable : AuditableEntity<int>
         Checkout(quantity);
         AssignedUserId = userId;
         AssignedAtUtc = DateTime.UtcNow;
+    }
+
+    public void Unassign(int quantity = 1)
+    {
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+        if (AssignedUserId is null)
+            throw new InvalidOperationException("Consumable is not assigned.");
+
+        TotalQuantity += quantity;
+        AssignedUserId = null;
+        AssignedAtUtc = null;
     }
 }

@@ -68,6 +68,18 @@ public sealed class Accessory : AuditableEntity<int>
         AssignedAtUtc = DateTime.UtcNow;
     }
 
+    public void Unassign(int quantity = 1)
+    {
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+        if (AssignedUserId is null)
+            throw new InvalidOperationException("Accessory is not assigned.");
+
+        TotalQuantity += quantity;
+        AssignedUserId = null;
+        AssignedAtUtc = null;
+    }
+
     public void SoftDelete()
     {
         IsDeleted = true;

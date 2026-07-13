@@ -28,12 +28,12 @@
     </ng-container>
 
     <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef> Actions </th>
-      <td mat-cell *matCellDef="let row">
-        <button mat-icon-button color="primary" (click)="openEditDialog(row)" *hasPermission="permissions.Accessories.Update" matTooltip="Edit">
+      <th mat-header-cell *matHeaderCellDef class="action-column"> Actions </th>
+      <td mat-cell *matCellDef="let row" class="action-column">
+        <button mat-icon-button color="primary" type="button" (click)="openEditDialog(row)" *hasPermission="permissions.Accessories.Update" matTooltip="Edit" aria-label="Edit">
           <mat-icon>edit</mat-icon>
         </button>
-        <button mat-icon-button color="warn" (click)="deleteAccessoryItem(row)" *hasPermission="permissions.Accessories.Delete" matTooltip="Delete">
+        <button mat-icon-button color="warn" type="button" (click)="deleteAccessoryItem(row)" *hasPermission="permissions.Accessories.Delete" matTooltip="Delete" aria-label="Delete">
           <mat-icon>delete</mat-icon>
         </button>
       </td>

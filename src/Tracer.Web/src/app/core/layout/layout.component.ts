@@ -7,7 +7,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../auth/auth.service';
 import { satisfiesAnyPermission } from '../auth/permissions';
-import { AlertsComponent } from '../notifications/alerts.component';
 import { NAV_ITEMS } from './nav-items';
 
 @Component({
@@ -20,8 +19,7 @@ import { NAV_ITEMS } from './nav-items';
     MatToolbarModule,
     MatListModule,
     MatIconModule,
-    MatButtonModule,
-    AlertsComponent
+    MatButtonModule
   ],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss']

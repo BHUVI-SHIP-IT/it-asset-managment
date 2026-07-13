@@ -3,8 +3,6 @@ import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
 
 /**
  * App-wide toast notifications wrapping MatSnackBar.
- * Named ToastService (not NotificationService) to avoid colliding with the
- * in-app alerts API client at core/notifications/notification.service.ts.
  */
 @Injectable({ providedIn: 'root' })
 export class ToastService {

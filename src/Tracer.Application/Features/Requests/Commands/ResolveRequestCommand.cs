@@ -141,6 +141,74 @@ public sealed class ResolveRequestCommandHandler : IRequestHandler<ResolveReques
                 license.ExtendExpiration(baseDate.AddYears(1));
                 break;
             }
+            case RequestType.Return:
+            {
+                await ApplyReturnSideEffectsAsync(entity, itemId, ct);
+                break;
+            }
+        }
+    }
+
+    private async Task ApplyReturnSideEffectsAsync(InventoryRequest entity, string itemId, CancellationToken ct)
+    {
+        var sep = itemId.IndexOf(':');
+        if (sep <= 0 || sep >= itemId.Length - 1)
+            throw new InvalidOperationException("Invalid return item id.");
+
+        var kind = itemId[..sep];
+        var rawId = itemId[(sep + 1)..];
+        var qty = entity.Quantity ?? 1;
+
+        switch (kind.ToLowerInvariant())
+        {
+            case "asset":
+            {
+                if (!Guid.TryParse(rawId, out var assetId))
+                    throw new InvalidOperationException("Invalid asset id.");
+                var asset = await _db.Assets.FirstOrDefaultAsync(a => a.Id == assetId && a.CompanyId == entity.CompanyId, ct)
+                    ?? throw new InvalidOperationException("Asset not found.");
+                if (asset.AssignedUserId != entity.RequestedByUserId)
+                    throw new InvalidOperationException("Asset is not assigned to the requester.");
+                if (asset.Status == AssetStatus.Deployed)
+                    asset.Checkin();
+                asset.ClearDomainEvents();
+                break;
+            }
+            case "consumable":
+            {
+                if (!int.TryParse(rawId, out var id))
+                    throw new InvalidOperationException("Invalid consumable id.");
+                var consumable = await _db.Consumables.FirstOrDefaultAsync(c => c.Id == id && c.CompanyId == entity.CompanyId, ct)
+                    ?? throw new InvalidOperationException("Consumable not found.");
+                if (consumable.AssignedUserId != entity.RequestedByUserId)
+                    throw new InvalidOperationException("Consumable is not assigned to the requester.");
+                consumable.Unassign(qty);
+                break;
+            }
+            case "component":
+            {
+                if (!int.TryParse(rawId, out var id))
+                    throw new InvalidOperationException("Invalid component id.");
+                var component = await _db.Components.FirstOrDefaultAsync(c => c.Id == id && c.CompanyId == entity.CompanyId, ct)
+                    ?? throw new InvalidOperationException("Component not found.");
+                if (component.AssignedUserId != entity.RequestedByUserId)
+                    throw new InvalidOperationException("Component is not assigned to the requester.");
+                component.Unassign(qty);
+                break;
+            }
+            case "accessory":
+            {
+                if (!int.TryParse(rawId, out var id))
+                    throw new InvalidOperationException("Invalid accessory id.");
+                var accessory = await _db.Accessories.FirstOrDefaultAsync(a => a.Id == id && a.CompanyId == entity.CompanyId, ct)
+                    ?? throw new InvalidOperationException("Accessory not found.");
+                if (accessory.AssignedUserId != entity.RequestedByUserId)
+                    throw new InvalidOperationException("Accessory is not assigned to the requester.");
+                accessory.Unassign(qty);
+                break;
+            }
+            default:
+                throw new InvalidOperationException("Unsupported return item kind.");
         }
     }
 }

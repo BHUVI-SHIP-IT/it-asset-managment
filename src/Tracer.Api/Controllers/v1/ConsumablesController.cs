@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Tracer.Application.Features.Consumables.DTOs;
 using Tracer.Application.Features.Consumables.Commands.CheckoutConsumable;
 using Tracer.Application.Features.Consumables.Commands.CreateConsumable;
+using Tracer.Application.Features.Consumables.Commands.DeleteConsumable;
+using Tracer.Application.Features.Consumables.Commands.UpdateConsumable;
 using Tracer.Application.Features.Consumables.Queries;
 using Tracer.Shared.Authorization;
 
@@ -39,6 +41,22 @@ public class ConsumablesController : ControllerBase
         return await _sender.Send(command);
     }
 
+    [HttpPut("{id:int}")]
+    [Authorize(Policy = Permissions.Consumables.Update)]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateConsumableBody body, CancellationToken cancellationToken)
+    {
+        await _sender.Send(new UpdateConsumableCommand(id, body.Name, body.TotalQuantity, body.PurchaseCost), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Policy = Permissions.Consumables.Delete)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        await _sender.Send(new DeleteConsumableCommand(id), cancellationToken);
+        return NoContent();
+    }
+
     [HttpPost("{id}/checkout")]
     [Authorize(Policy = Permissions.Consumables.Checkout)]
     public async Task<ActionResult> Checkout(int id, CheckoutConsumableCommand command)
@@ -51,4 +69,6 @@ public class ConsumablesController : ControllerBase
         await _sender.Send(command);
         return NoContent();
     }
+
+    public sealed record UpdateConsumableBody(string Name, int TotalQuantity, decimal PurchaseCost);
 }

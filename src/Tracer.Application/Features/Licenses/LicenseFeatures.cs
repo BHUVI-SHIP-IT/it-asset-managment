@@ -25,6 +25,17 @@ public sealed record CreateLicenseCommand(
     DateTime? ExpirationDate,
     string? Notes) : IRequest<Guid>;
 
+public sealed record UpdateLicenseCommand(
+    Guid Id,
+    string Name,
+    Guid? ManufacturerId,
+    int TotalSeats,
+    decimal PurchaseCost,
+    DateTime? ExpirationDate,
+    string? Notes) : IRequest;
+
+public sealed record DeleteLicenseCommand(Guid Id) : IRequest;
+
 public sealed class GetLicensesQueryHandler : IRequestHandler<GetLicensesQuery, List<LicenseDto>>
 {
     private readonly IApplicationDbContext _context;
@@ -104,5 +115,62 @@ public sealed class CreateLicenseCommandHandler : IRequestHandler<CreateLicenseC
         _context.SoftwareLicenses.Add(license);
         await _context.SaveChangesAsync(cancellationToken);
         return license.Id;
+    }
+}
+
+public sealed class UpdateLicenseCommandHandler : IRequestHandler<UpdateLicenseCommand>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public UpdateLicenseCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
+    {
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task Handle(UpdateLicenseCommand request, CancellationToken cancellationToken)
+    {
+        var companyId = _currentUser.CompanyId
+            ?? throw new UnauthorizedAccessException("No tenant context is available.");
+
+        var license = await _context.SoftwareLicenses
+            .FirstOrDefaultAsync(x => x.Id == request.Id && x.CompanyId == companyId, cancellationToken)
+            ?? throw new KeyNotFoundException($"License {request.Id} was not found.");
+
+        license.Update(
+            request.Name,
+            request.ManufacturerId,
+            request.TotalSeats,
+            request.PurchaseCost,
+            request.ExpirationDate,
+            request.Notes);
+
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+}
+
+public sealed class DeleteLicenseCommandHandler : IRequestHandler<DeleteLicenseCommand>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public DeleteLicenseCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
+    {
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task Handle(DeleteLicenseCommand request, CancellationToken cancellationToken)
+    {
+        var companyId = _currentUser.CompanyId
+            ?? throw new UnauthorizedAccessException("No tenant context is available.");
+
+        var license = await _context.SoftwareLicenses
+            .FirstOrDefaultAsync(x => x.Id == request.Id && x.CompanyId == companyId, cancellationToken)
+            ?? throw new KeyNotFoundException($"License {request.Id} was not found.");
+
+        license.SoftDelete();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

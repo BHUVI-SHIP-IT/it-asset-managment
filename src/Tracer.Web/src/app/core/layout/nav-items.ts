@@ -37,5 +37,4 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Depreciation', route: '/financials/depreciation', icon: 'trending_down', permission: Permissions.Depreciation.View },
   { label: 'Reports', route: '/financials/reports', icon: 'assessment', permission: Permissions.Reports.View },
   { label: 'Settings', route: '/settings', icon: 'settings', permission: Permissions.Settings.View },
-  { label: 'Custom Fields', route: '/settings/custom-fields', icon: 'text_fields', permission: Permissions.CustomFields.View },
 ];

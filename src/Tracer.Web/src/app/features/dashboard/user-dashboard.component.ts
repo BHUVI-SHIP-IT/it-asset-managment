@@ -1,12 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 import { DashboardService, UserDashboardSummaryDto } from './dashboard.service';
-import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
-import { Permissions } from '../../core/auth/permissions';
 
 interface StatCard {
   icon: string;
@@ -21,11 +17,8 @@ interface StatCard {
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule,
     MatCardModule,
     MatIconModule,
-    MatButtonModule,
-    HasPermissionDirective,
   ],
   template: `
     <div class="dashboard">
@@ -86,21 +79,6 @@ interface StatCard {
           </mat-card-content>
         </mat-card>
       }
-
-      <div class="quick-links">
-        <h2>Quick Actions</h2>
-        <div class="links-grid">
-          <a mat-raised-button routerLink="/requests/mine" color="primary" *hasPermission="permissions.Requests.Create">
-            <mat-icon>add_circle</mat-icon> Submit New Request
-          </a>
-          <a mat-stroked-button routerLink="/my-items">
-            <mat-icon>inventory</mat-icon> View My Items
-          </a>
-          <a mat-stroked-button routerLink="/requests/mine" *hasPermission="permissions.Requests.ViewOwn">
-            <mat-icon>history</mat-icon> View My Request History
-          </a>
-        </div>
-      </div>
     </div>
   `,
   styles: [`
@@ -148,13 +126,10 @@ interface StatCard {
     .attention-item.urgent mat-icon { color: #f44336; }
     .attention-title { font-weight: 600; }
     .attention-detail { font-size: 13px; color: var(--mat-sys-on-surface-variant); }
-    .links-grid { display: flex; gap: 12px; flex-wrap: wrap; }
-    .links-grid a { display: flex; align-items: center; gap: 8px; }
   `]
 })
 export class UserDashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
-  readonly permissions = Permissions;
 
   assignedStats = signal<StatCard[]>([
     { icon: 'devices', label: 'Assets', value: '—', trend: '', color: 'blue' },

@@ -30,7 +30,7 @@
           <button mat-icon-button color="primary" *hasPermission="permissions.Departments.Update" (click)="openEditDialog(row)" matTooltip="Edit">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="warn" *hasPermission="permissions.Departments.Delete" (click)="deleteDepartment(row)" matTooltip="Delete">
+          <button mat-icon-button color="warn" *hasPermission="permissions.Departments.Delete" (click)="deleteDepartment(row)" matTooltip="Delete" aria-label="Delete">
             <mat-icon>delete</mat-icon>
           </button>
         </td>
